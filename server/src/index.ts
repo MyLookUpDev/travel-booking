@@ -2,8 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import bookingRoutes from './routes/bookingRoutes';
-import tripRoutes from './routes/tripRoutes';
+import bookingRoutes from './routes/bookingRoutes.js';
+import tripRoutes from './routes/tripRoutes.js';
 
 dotenv.config();
 
