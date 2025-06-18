@@ -11,6 +11,7 @@ const Home = () => {
           <a href="#about" className="hover:text-blue-500">About</a>
           <a href="#packages" className="hover:text-blue-500">Packages</a>
           <a href="#contact" className="hover:text-blue-500">Contact</a>
+          <a href="/booking" className="hover:text-blue-500">Booking</a>
         </nav>
       </header>
 

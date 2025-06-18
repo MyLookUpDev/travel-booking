@@ -1,0 +1,295 @@
+// AdminPage.tsx
+import React, { useEffect, useState } from 'react';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+
+interface Activity {
+  name: string;
+  hour: string;
+  period: string;
+  optional: boolean;
+}
+
+interface Booking {
+  _id: string;
+  name: string;
+  phone: string;
+  address: string;
+  cin: string;
+  destination: string;
+  date: string;
+  gender: string;
+  age: number;
+  status?: 'pending' | 'confirmed' | 'rejected';
+  redFlag?: boolean;
+  comment?: string;
+}
+
+interface Trip {
+  _id: string;
+  destination: string;
+  date: string;
+  seats: number;
+  gender: string;
+  activities?: Activity[];
+}
+
+const AdminPage = () => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all' });
+  const [tripMessage, setTripMessage] = useState('');
+  const [filterDestination, setFilterDestination] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const [bookingFilterDestination, setBookingFilterDestination] = useState('');
+  const [bookingFilterDate, setBookingFilterDate] = useState('');
+  const [sortAsc, setSortAsc] = useState(true);
+  const [editingTripId, setEditingTripId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all' });
+  const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
+  const [bookingEditMap, setBookingEditMap] = useState<Record<string, Partial<Booking>>>({});
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/bookings')
+      .then((res) => res.json())
+      .then((data) => {
+        setBookings(data);
+        setLoading(false);
+      });
+
+    fetch('http://localhost:5000/api/trips')
+      .then((res) => res.json())
+      .then((data) => setTrips(data));
+  }, []);
+
+  const handleEditBookingClick = (b: Booking) => {
+    setEditingBookingId(b._id);
+    setBookingEditMap({ ...bookingEditMap, [b._id]: { status: b.status, redFlag: b.redFlag, comment: b.comment } });
+  };
+
+  const handleCancelBookingEdit = () => {
+    setEditingBookingId(null);
+  };
+
+  const handleEditBookingChange = (id: string, field: keyof Booking, value: any) => {
+    setBookingEditMap((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
+  };
+
+  const handleSaveBooking = (id: string) => {
+    const updated = bookingEditMap[id];
+    setBookings((prev) => prev.map((b) => (b._id === id ? { ...b, ...updated } : b)));
+    setEditingBookingId(null);
+  };
+
+  const handleTripChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setTripForm({ ...tripForm, [e.target.name]: e.target.value });
+  };
+
+  const handleTripSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTripMessage('');
+    const payload = { ...tripForm, seats: parseInt(tripForm.seats) };
+
+    try {
+      const res = await fetch('http://localhost:5000/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const newTrip = await res.json();
+        setTrips([...trips, newTrip]);
+        setTripMessage('✅ Trip added successfully');
+        setTripForm({ destination: '', date: '', seats: '', gender: 'all' });
+      } else {
+        setTripMessage('❌ Failed to add trip');
+      }
+    } catch (err) {
+      console.error(err);
+      setTripMessage('❌ Server error');
+    }
+  };
+
+  const handleEditClick = (trip: Trip) => {
+    setEditingTripId(trip._id);
+    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender });
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleEditSubmit = async (tripId: string) => {
+    const updatedTrip = { ...editForm, seats: parseInt(editForm.seats) };
+    try {
+      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTrip),
+      });
+      if (res.ok) {
+        const updatedList = trips.map((t) => (t._id === tripId ? { ...t, ...updatedTrip } : t));
+        setTrips(updatedList);
+        setEditingTripId(null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
+  const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
+  const uniqueBookingDestinations = Array.from(new Set(bookings.map((b) => b.destination)));
+  const uniqueBookingDates = Array.from(new Set(bookings.map((b) => b.date)));
+
+  const filteredTrips = trips.filter((t) => (filterDestination === '' || t.destination === filterDestination) && (filterDate === '' || t.date === filterDate));
+  const filteredBookings = bookings.filter((b) => (bookingFilterDestination === '' || b.destination === bookingFilterDestination) && (bookingFilterDate === '' || b.date === bookingFilterDate));
+
+  const calendarEvents = trips.map((trip) => ({ title: trip.destination, date: trip.date }));
+
+  const statusCellColor = (status: string | undefined) => {
+    if (status === 'confirmed') return 'bg-green-400';
+    if (status === 'rejected') return 'bg-red-400';
+    return 'bg-blue-200';
+  };
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold mb-2">Calendar of Trips</h2>
+        <FullCalendar plugins={[dayGridPlugin]} initialView="dayGridMonth" events={calendarEvents} height={500} />
+      </div>
+
+      <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <input type="text" name="destination" placeholder="Destination" value={tripForm.destination} onChange={handleTripChange} className="border p-2 rounded" required />
+        <input type="date" name="date" value={tripForm.date} onChange={handleTripChange} className="border p-2 rounded" required />
+        <input type="number" name="seats" placeholder="Seats" value={tripForm.seats} onChange={handleTripChange} className="border p-2 rounded" required />
+        <select name="gender" value={tripForm.gender} onChange={handleTripChange} className="border p-2 rounded">
+          <option value="all">All</option>
+          <option value="female">Women Only</option>
+        </select>
+        <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
+      </form>
+      {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
+
+      <h2 className="text-xl font-semibold mt-10 mb-2">Trips</h2>
+      <div className="flex gap-4 mb-2">
+        <select value={filterDestination} onChange={(e) => setFilterDestination(e.target.value)} className="border p-2 rounded">
+          <option value="">All Destinations</option>
+          {uniqueDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
+        </select>
+        <select value={filterDate} onChange={(e) => setFilterDate(e.target.value)} className="border p-2 rounded">
+          <option value="">All Dates</option>
+          {uniqueDates.map((d) => <option key={d} value={d}>{d}</option>)}
+        </select>
+      </div>
+      <table className="min-w-full border mb-10">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border px-2 py-1">Destination</th>
+            <th className="border px-2 py-1">Date</th>
+            <th className="border px-2 py-1">Seats</th>
+            <th className="border px-2 py-1">Gender</th>
+            <th className="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredTrips.map((trip) => (
+            <tr key={trip._id}>
+              {editingTripId === trip._id ? (
+                <>
+                  <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                  <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                  <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                  <td><select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full"><option value="all">All</option><option value="female">Women Only</option></select></td>
+                  <td>
+                    <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                    <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td className="border px-2 py-1">{trip.destination}</td>
+                  <td className="border px-2 py-1">{trip.date}</td>
+                  <td className="border px-2 py-1">{trip.seats}</td>
+                  <td className="border px-2 py-1">{trip.gender}</td>
+                  <td className="border px-2 py-1"><button onClick={() => handleEditClick(trip)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button></td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2 className="text-xl font-semibold mb-2">Bookings</h2>
+      <div className="flex gap-4 mb-2">
+        <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
+          <option value="">All Destinations</option>
+          {uniqueBookingDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
+        </select>
+        <select value={bookingFilterDate} onChange={(e) => setBookingFilterDate(e.target.value)} className="border p-2 rounded">
+          <option value="">All Dates</option>
+          {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
+        </select>
+      </div>
+      <table className="min-w-full border">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border px-2 py-1">Name</th>
+            <th className="border px-2 py-1">Phone</th>
+            <th className="border px-2 py-1">Destination</th>
+            <th className="border px-2 py-1">Date</th>
+            <th className="border px-2 py-1">Status</th>
+            <th className="border px-2 py-1">Red Flag</th>
+            <th className="border px-2 py-1">Comment</th>
+            <th className="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredBookings.map((b) => (
+            <tr key={b._id}>
+              <td className="border px-2 py-1">{b.name}</td>
+              <td className="border px-2 py-1">{b.phone}</td>
+              <td className="border px-2 py-1">{b.destination}</td>
+              <td className="border px-2 py-1">{b.date}</td>
+              <td className={`border px-2 py-1 ${statusCellColor(b.status)}`}>
+                {editingBookingId === b._id ? (
+                  <select value={bookingEditMap[b._id]?.status || 'pending'} onChange={(e) => handleEditBookingChange(b._id, 'status', e.target.value)}>
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                ) : b.status || 'pending'}
+              </td>
+              <td className="border px-2 py-1">
+                {editingBookingId === b._id ? (
+                  <input type="checkbox" checked={bookingEditMap[b._id]?.redFlag || false} onChange={(e) => handleEditBookingChange(b._id, 'redFlag', e.target.checked)} />
+                ) : b.redFlag ? '🚩' : ''}
+              </td>
+              <td className="border px-2 py-1">
+                {editingBookingId === b._id ? (
+                  <input value={bookingEditMap[b._id]?.comment || ''} onChange={(e) => handleEditBookingChange(b._id, 'comment', e.target.value)} className="border p-1 rounded w-full" />
+                ) : b.comment || ''}
+              </td>
+              <td className="border px-2 py-1">
+                {editingBookingId === b._id ? (
+                  <>
+                    <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                    <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                  </>
+                ) : (
+                  <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default AdminPage;
