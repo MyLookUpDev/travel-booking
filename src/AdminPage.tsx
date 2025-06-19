@@ -31,6 +31,7 @@ interface Trip {
   date: string;
   seats: number;
   gender: string;
+  price: number;
   activities?: Activity[];
   image?: string;
 }
@@ -39,20 +40,23 @@ const AdminPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all' });
+  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', image: '' });
   const [tripMessage, setTripMessage] = useState('');
   const [filterDestination, setFilterDestination] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [bookingFilterDestination, setBookingFilterDestination] = useState('');
   const [bookingFilterDate, setBookingFilterDate] = useState('');
-  const [sortAsc, setSortAsc] = useState(true);
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all' });
+  const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', image: '' });
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [bookingEditMap, setBookingEditMap] = useState<Record<string, Partial<Booking>>>({});
   // For image editing
   const [imageEditTripId, setImageEditTripId] = useState<string | null>(null);
   const [imageEditUrl, setImageEditUrl] = useState<string>('');
+
+  // === ACTIVITY MODAL ===
+  const [activityModalTripId, setActivityModalTripId] = useState<string | null>(null);
+  const [modalActivities, setModalActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
     fetch('http://localhost:5000/api/bookings')
@@ -76,7 +80,7 @@ const AdminPage = () => {
     setEditingBookingId(null);
   };
 
-  const handleEditBookingChange = (id: string, field: keyof Booking, value: any) => {
+  const handleEditBookingChange = (id: string, field: keyof Booking, value: unknown) => {
     setBookingEditMap((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
   };
 
@@ -93,7 +97,7 @@ const AdminPage = () => {
   const handleTripSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTripMessage('');
-    const payload = { ...tripForm, seats: parseInt(tripForm.seats) };
+    const payload = { ...tripForm, seats: parseInt(tripForm.seats), price: parseFloat(tripForm.price)  };
 
     try {
       const res = await fetch('http://localhost:5000/api/trips', {
@@ -105,7 +109,7 @@ const AdminPage = () => {
         const newTrip = await res.json();
         setTrips([...trips, newTrip]);
         setTripMessage('✅ Trip added successfully');
-        setTripForm({ destination: '', date: '', seats: '', gender: 'all' });
+        setTripForm({ destination: '', date: '', seats: '', gender: 'all', price: '', image: ''  });
       } else {
         setTripMessage('❌ Failed to add trip');
       }
@@ -117,7 +121,7 @@ const AdminPage = () => {
 
   const handleEditClick = (trip: Trip) => {
     setEditingTripId(trip._id);
-    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender });
+    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender , price: trip.price.toString(), image: trip.image});
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -125,7 +129,7 @@ const AdminPage = () => {
   };
 
   const handleEditSubmit = async (tripId: string) => {
-    const updatedTrip = { ...editForm, seats: parseInt(editForm.seats) };
+    const updatedTrip = { ...editForm, seats: parseInt(editForm.seats), price: parseFloat(editForm.price)  };
     try {
       const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
         method: 'PUT',
@@ -164,7 +168,37 @@ const AdminPage = () => {
       console.error(err);
     }
   };
-  // === END IMAGE EDIT LOGIC ===
+
+  // === ACTIVITY MODAL LOGIC ===
+  const handleOpenActivitiesModal = (trip: Trip) => {
+    setActivityModalTripId(trip._id);
+    setModalActivities(trip.activities ? [...trip.activities] : []);
+  };
+  const handleCloseActivitiesModal = () => {
+    setActivityModalTripId(null);
+    setModalActivities([]);
+  };
+  const handleSaveActivities = async () => {
+    const tripId = activityModalTripId;
+    if (!tripId) return;
+    try {
+      const trip = trips.find((t) => t._id === tripId);
+      if (!trip) return;
+      const updated = { ...trip, activities: modalActivities };
+      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        const updatedList = trips.map((t) => (t._id === tripId ? { ...t, activities: modalActivities } : t));
+        setTrips(updatedList);
+        handleCloseActivitiesModal();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
   const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
@@ -199,6 +233,8 @@ const AdminPage = () => {
           <option value="all">All</option>
           <option value="female">Women Only</option>
         </select>
+        <input type="number" name="price" placeholder="Price" value={tripForm.price} onChange={handleTripChange} className="border p-2 rounded" required />
+        <input type="text" name="image" placeholder="Image URL" value={tripForm.image} onChange={handleTripChange} className="border p-2 rounded" required />
         <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
       </form>
       {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
@@ -221,6 +257,7 @@ const AdminPage = () => {
             <th className="border px-2 py-1">Date</th>
             <th className="border px-2 py-1">Seats</th>
             <th className="border px-2 py-1">Gender</th>
+            <th className="border px-2 py-1">Price</th>
             <th className="border px-2 py-1">Image</th>
             <th className="border px-2 py-1">Actions</th>
           </tr>
@@ -239,8 +276,8 @@ const AdminPage = () => {
                       <option value="female">Women Only</option>
                     </select>
                   </td>
+                  <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
                   <td>
-                    {/* Don't allow image edit in trip edit, use dedicated button */}
                     {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
                   </td>
                   <td>
@@ -254,6 +291,7 @@ const AdminPage = () => {
                   <td className="border px-2 py-1">{trip.date}</td>
                   <td className="border px-2 py-1">{trip.seats}</td>
                   <td className="border px-2 py-1">{trip.gender}</td>
+                  <td className="border px-2 py-1">{trip.price} MAD</td>
                   <td className="border px-2 py-1">
                     {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
                     {imageEditTripId === trip._id ? (
@@ -287,7 +325,7 @@ const AdminPage = () => {
                       </div>
                     ) : (
                       <button
-                        className="bg-blue-500 text-white px-2 py-1 rounded"
+                        className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
                         onClick={() => {
                           setImageEditTripId(trip._id);
                           setImageEditUrl(trip.image || '');
@@ -298,13 +336,115 @@ const AdminPage = () => {
                       </button>
                     )}
                   </td>
-                  <td className="border px-2 py-1"><button onClick={() => handleEditClick(trip)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button></td>
+                  <td className="border px-2 py-1">
+                    <button
+                      onClick={() => handleOpenActivitiesModal(trip)}
+                      className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
+                      type="button"
+                    >
+                      Activities
+                    </button>
+                    <button
+                      onClick={() => handleEditClick(trip)}
+                      className="bg-yellow-500 text-white px-2 py-1 rounded"
+                      type="button"
+                    >
+                      Edit
+                    </button>
+                  </td>
                 </>
               )}
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* ===== Activities Modal ===== */}
+      {activityModalTripId && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
+            <h3 className="text-xl font-semibold mb-4">Edit Activities</h3>
+            <ul className="space-y-3 mb-3">
+              {modalActivities.map((a, i) => (
+                <li key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    value={a.name}
+                    onChange={e => {
+                      const updated = [...modalActivities];
+                      updated[i].name = e.target.value;
+                      setModalActivities(updated);
+                    }}
+                    className="border p-1 rounded w-28"
+                    required
+                  />
+                  <input
+                    type="time"
+                    value={a.hour}
+                    onChange={e => {
+                      const updated = [...modalActivities];
+                      updated[i].hour = e.target.value;
+                      setModalActivities(updated);
+                    }}
+                    className="border p-1 rounded w-20"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Period"
+                    value={a.period}
+                    onChange={e => {
+                      const updated = [...modalActivities];
+                      updated[i].period = e.target.value;
+                      setModalActivities(updated);
+                    }}
+                    className="border p-1 rounded w-16"
+                    required
+                  />
+                  <select
+                    value={a.optional ? 'yes' : 'no'}
+                    onChange={e => {
+                      const updated = [...modalActivities];
+                      updated[i].optional = e.target.value === 'yes';
+                      setModalActivities(updated);
+                    }}
+                    className="border p-1 rounded"
+                  >
+                    <option value="no">Required</option>
+                    <option value="yes">Optional</option>
+                  </select>
+                  <button
+                    type="button"
+                    className="bg-red-500 text-white px-2 rounded"
+                    onClick={() => {
+                      const updated = [...modalActivities];
+                      updated.splice(i, 1);
+                      setModalActivities(updated);
+                    }}
+                  >✕</button>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="bg-green-600 text-white px-3 py-1 rounded mb-4"
+              onClick={() =>
+                setModalActivities([
+                  ...modalActivities,
+                  { name: '', hour: '', period: '', optional: false },
+                ])
+              }
+            >
+              + Add Activity
+            </button>
+            <div className="flex gap-3 justify-end">
+              <button onClick={handleSaveActivities} className="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
+              <button onClick={handleCloseActivitiesModal} className="bg-gray-400 text-white px-4 py-1 rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* BOOKINGS TABLE */}
       <h2 className="text-xl font-semibold mb-2">Bookings</h2>
