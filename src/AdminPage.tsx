@@ -50,6 +50,9 @@ const AdminPage = () => {
   const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', image: '' });
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [bookingEditMap, setBookingEditMap] = useState<Record<string, Partial<Booking>>>({});
+  
+  void loading;
+
   // For image editing
   const [imageEditTripId, setImageEditTripId] = useState<string | null>(null);
   const [imageEditUrl, setImageEditUrl] = useState<string>('');
