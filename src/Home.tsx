@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import 'keen-slider/keen-slider.min.css';
 import { useKeenSlider } from 'keen-slider/react';
 
+void React;
+
 type Trip = {
   _id: string;
   destination: string;
