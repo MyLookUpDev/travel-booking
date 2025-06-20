@@ -1,9 +1,11 @@
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import bookingRoutes from './routes/bookingRoutes.js';
 import tripRoutes from './routes/tripRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
@@ -26,6 +28,7 @@ app.use(express.json());
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/uploads', express.static('uploads'));
+//app.use('/api/auth', authRoutes);
 
 mongoose
   .connect(MONGO_URI)

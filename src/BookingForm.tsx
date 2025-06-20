@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { useLocation } from 'react-router-dom';
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 
 type Trip = {
   _id: string;
@@ -30,26 +35,38 @@ const BookingForm = () => {
   const [bgImage, setBgImage] = useState<string>('');
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 
-  // Fetch trips from the backend
+  // Get query parameters
+  const query = useQuery();
+
+  // On mount: fetch all trips and handle URL prefill
   useEffect(() => {
     fetch('http://localhost:5000/api/trips')
       .then((res) => res.json())
       .then((data) => setAllTrips(data))
-      .catch((err) => {
-        console.error('Failed to fetch trips:', err);
-        setAllTrips([]);
-      });
+      .catch(() => setAllTrips([]));
   }, []);
 
+  // On mount: prefill from localStorage, then from URL if available
   useEffect(() => {
     const saved = localStorage.getItem('bookingForm');
-    if (saved) setFormData(JSON.parse(saved));
+    let base = saved ? JSON.parse(saved) : {};
+    const destination = query.get('destination') || '';
+    const date = query.get('date') || '';
+    setFormData((fd) => ({
+      ...fd,
+      ...base,
+      destination: destination || base.destination || '',
+      date: date || base.date || '',
+    }));
+    // eslint-disable-next-line
   }, []);
+
+  // Save form to localStorage
   useEffect(() => {
     localStorage.setItem('bookingForm', JSON.stringify(formData));
   }, [formData]);
 
-  // When destination changes, set available dates and background image
+  // Update available dates and background image when destination changes or trips update
   useEffect(() => {
     if (!formData.destination) {
       setAvailableDates([]);
@@ -57,20 +74,26 @@ const BookingForm = () => {
       setSelectedTrip(null);
       return;
     }
-    const filtered = allTrips.filter(
-      (t) => t.destination === formData.destination
-    );
+    const filtered = allTrips.filter((t) => t.destination === formData.destination);
     setAvailableDates(filtered);
 
-    const firstWithImage = filtered.find((t) => t.image);
-    setBgImage(firstWithImage?.image || '');
+    // Set background image to first found image for that destination
+    setBgImage(filtered.find((t) => t.image)?.image || '');
 
-    // Reset date and selected trip if destination changes
-    setFormData((fd) => ({ ...fd, date: '' }));
-    setSelectedTrip(null);
+    // If the current date isn't in the filtered dates, reset it
+    if (formData.date && !filtered.some((t) => t.date === formData.date)) {
+      setFormData((fd) => ({ ...fd, date: '' }));
+      setSelectedTrip(null);
+    }
+    // If the date is present, select the trip
+    if (formData.date && filtered.some((t) => t.date === formData.date)) {
+      const trip = filtered.find((t) => t.date === formData.date);
+      setSelectedTrip(trip || null);
+      if (trip?.image) setBgImage(trip.image);
+    }
   }, [formData.destination, allTrips]);
 
-  // When date changes, select the trip for image/price/etc
+  // When date changes, select the correct trip and image
   useEffect(() => {
     if (formData.date && formData.destination) {
       const trip = allTrips.find(
@@ -85,18 +108,15 @@ const BookingForm = () => {
     }
   }, [formData.date, formData.destination, allTrips]);
 
-  // List of all unique destinations
-  const destinations = Array.from(
-    new Set(allTrips.map((t) => t.destination))
-  );
+  // Get all unique destinations
+  const destinations = Array.from(new Set(allTrips.map((t) => t.destination)));
 
-  // Handle input change
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  // Input change handler
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -136,7 +156,6 @@ const BookingForm = () => {
     formData.destination
   )}%0ADate:%20${formData.date}`;
 
-  // Tailwind: set background image dynamically if exists
   return (
     <div
       className={`max-w-xl mx-auto p-6 rounded-lg shadow relative`}
@@ -151,7 +170,6 @@ const BookingForm = () => {
           : { background: '#fff' }
       }
     >
-      {/* Optional: overlay for readability */}
       {bgImage && (
         <div className="absolute inset-0 bg-white bg-opacity-70 rounded-lg pointer-events-none"></div>
       )}
@@ -240,7 +258,7 @@ const BookingForm = () => {
                 </option>
               ))}
             </select>
-            
+
             <select
               name="date"
               value={formData.date}
