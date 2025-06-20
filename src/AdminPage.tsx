@@ -121,7 +121,7 @@ const AdminPage = () => {
 
   const handleEditClick = (trip: Trip) => {
     setEditingTripId(trip._id);
-    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender , price: trip.price.toString(), image: trip.image});
+    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender , price: trip.price.toString(), image: trip.image || ''});
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

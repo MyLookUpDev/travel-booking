@@ -68,7 +68,7 @@ const Home = () => {
       <section className="h-[55vh] md:h-[70vh] bg-black flex items-center justify-center text-white relative">
         <div ref={sliderRef} className="keen-slider w-full h-full rounded-2xl overflow-hidden shadow-xl">
           {filteredTrips.length > 0 ? (
-            filteredTrips.slice(0, 8).map((trip, i) => (
+            filteredTrips.slice(0, 8).map((trip) => (
               <div key={trip._id} className="keen-slider__slide flex items-center justify-center h-full relative">
                 <img
                   src={trip.image || '/images/banner.jpg'}
