@@ -31,9 +31,9 @@ app.use('/api/trips', tripRoutes);
 app.use('/uploads', express.static('uploads'));
 
 // Serve frontend static files (optional, for combined prod deploy)
-app.use(express.static(path.join(__dirname, "../dist")));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../dist/index.html"));
+app.use(express.static(path.join(__dirname, "../../dist")));
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "..","..","dist","index.html"));
 });
 
 // Start server after connecting to MongoDB
