@@ -56,7 +56,7 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch('${import.meta.env.VITE_API_URL}/api/bookings', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

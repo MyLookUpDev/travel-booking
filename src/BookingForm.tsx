@@ -40,7 +40,7 @@ const BookingForm = () => {
 
   // On mount: fetch all trips and handle URL prefill
   useEffect(() => {
-    fetch('${import.meta.env.VITE_API_URL}/api/trips')
+    fetch(`${import.meta.env.VITE_API_URL}/api/trips`)
       .then((res) => res.json())
       .then((data) => setAllTrips(data))
       .catch(() => setAllTrips([]));
@@ -132,7 +132,7 @@ const BookingForm = () => {
     const payload = { ...formData, age };
 
     try {
-      const res = await fetch('${import.meta.env.VITE_API_URL}/api/bookings', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

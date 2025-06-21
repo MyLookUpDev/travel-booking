@@ -62,14 +62,14 @@ const AdminPage = () => {
   const [modalActivities, setModalActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
-    fetch('${import.meta.env.VITE_API_URL}/api/bookings')
+    fetch(`${import.meta.env.VITE_API_URL}/api/bookings`)
       .then((res) => res.json())
       .then((data) => {
         setBookings(data);
         setLoading(false);
       });
 
-    fetch('${import.meta.env.VITE_API_URL}/api/trips')
+    fetch(`${import.meta.env.VITE_API_URL}/api/trips`)
       .then((res) => res.json())
       .then((data) => setTrips(data));
   }, []);
@@ -103,7 +103,7 @@ const AdminPage = () => {
     const payload = { ...tripForm, seats: parseInt(tripForm.seats), price: parseFloat(tripForm.price)  };
 
     try {
-      const res = await fetch('${import.meta.env.VITE_API_URL}/api/trips', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/trips`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
