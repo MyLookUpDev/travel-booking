@@ -62,14 +62,14 @@ const AdminPage = () => {
   const [modalActivities, setModalActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/bookings')
+    fetch('${import.meta.env.VITE_API_URL}/api/bookings')
       .then((res) => res.json())
       .then((data) => {
         setBookings(data);
         setLoading(false);
       });
 
-    fetch('http://localhost:5000/api/trips')
+    fetch('${import.meta.env.VITE_API_URL}/api/trips')
       .then((res) => res.json())
       .then((data) => setTrips(data));
   }, []);
@@ -103,7 +103,7 @@ const AdminPage = () => {
     const payload = { ...tripForm, seats: parseInt(tripForm.seats), price: parseFloat(tripForm.price)  };
 
     try {
-      const res = await fetch('http://localhost:5000/api/trips', {
+      const res = await fetch('${import.meta.env.VITE_API_URL}/api/trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -134,7 +134,7 @@ const AdminPage = () => {
   const handleEditSubmit = async (tripId: string) => {
     const updatedTrip = { ...editForm, seats: parseInt(editForm.seats), price: parseFloat(editForm.price)  };
     try {
-      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/trips/${tripId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedTrip),
@@ -154,7 +154,7 @@ const AdminPage = () => {
     const trip = trips.find((t) => t._id === tripId);
     if (!trip) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/trips/${tripId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...trip, image: imageEditUrl }),
@@ -188,7 +188,7 @@ const AdminPage = () => {
       const trip = trips.find((t) => t._id === tripId);
       if (!trip) return;
       const updated = { ...trip, activities: modalActivities };
-      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/trips/${tripId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated),

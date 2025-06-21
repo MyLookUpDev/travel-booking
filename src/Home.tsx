@@ -33,7 +33,7 @@ const Home = () => {
   });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/trips')
+    fetch('${import.meta.env.VITE_API_URL}/api/trips')
       .then((res) => res.json())
       .then((data) => setTrips(data))
       .catch(() => setTrips([]));
