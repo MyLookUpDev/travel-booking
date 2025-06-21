@@ -39,6 +39,9 @@ export default function Home() {
   const [message, setMessage] = useState<string | null>(null)
   const navigate = useNavigate()
 
+  void message;
+  void setMessage;
+
   const handleSubmit = async () => {
     if (!selectedTrip) {
       alert('Please select a trip.')
