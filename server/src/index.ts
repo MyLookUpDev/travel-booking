@@ -6,6 +6,7 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import tripRoutes from './routes/tripRoutes.js';
 import path from "path";
 import { fileURLToPath } from "url";
+import whatsappNumberRoutes from "./routes/whatsappNumber.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(express.json());
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/uploads', express.static('uploads'));
+app.use("/api/whatsapp-number", whatsappNumberRoutes);
 
 // Serve frontend static files (optional, for combined prod deploy)
 app.use(express.static(path.join(__dirname, "../../dist")));

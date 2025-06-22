@@ -1,7 +1,8 @@
 // Home.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import 'keen-slider/keen-slider.min.css';
 import { useKeenSlider } from 'keen-slider/react';
+import Navbar from './components/Navbar';
 
 void React;
 
@@ -26,13 +27,46 @@ const Home = () => {
   const [weekendOnly, setWeekendOnly] = useState(false);
 
   // Slideshow logic
-  const [sliderRef] = useKeenSlider<HTMLDivElement>({
+  const sliderDomRef = useRef<HTMLDivElement>(null); // <-- create a DOM ref
+  const [sliderRefCallback, instanceRef] = useKeenSlider<HTMLDivElement>({
     loop: true,
     slides: { perView: 1 },
-    mode: 'snap',
+    mode: "snap",
   });
+  // Attach both refs to the same element
+  function combinedRef(node: HTMLDivElement | null) {
+    sliderRefCallback(node);
+    sliderDomRef.current = node;
+  }
+
+  // AUTOPLAY LOGIC
+  useEffect(() => {
+    if (!instanceRef.current) return;
+    const slider = instanceRef.current;
+    let interval: NodeJS.Timeout | undefined;
+    const start = () => {
+      interval = setInterval(() => {
+        if (slider) slider.next();
+      }, 3000);
+    };
+    const stop = () => {
+      if (interval) clearInterval(interval);
+    };
+    start();
+
+    const node = sliderDomRef.current;
+    node?.addEventListener("mouseenter", stop);
+    node?.addEventListener("mouseleave", start);
+
+    return () => {
+      stop();
+      node?.removeEventListener("mouseenter", stop);
+      node?.removeEventListener("mouseleave", start);
+    };
+  }, [instanceRef]);
 
   useEffect(() => {
+    console.log(`${import.meta.env.VITE_API_URL}/api/trips`);
     fetch(`${import.meta.env.VITE_API_URL}/api/trips`)
       .then((res) => res.json())
       .then((data) => setTrips(data))
@@ -48,27 +82,10 @@ const Home = () => {
 
   return (
     <div className="bg-white text-gray-900">
-      {/* Navbar */}
-      <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Khouloud Voyage</h1>
-        <nav className="space-x-6">
-          <a href="#home" className="hover:text-blue-500">Home</a>
-          <a href="/booking" className="hover:text-blue-500">Booking</a>
-          <a href="#packages" className="hover:text-blue-500">Packages</a>
-          <a
-            href="https://wa.me/212656290454"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-green-600"
-          >
-            Contact
-          </a>
-        </nav>
-      </header>
-
+      <Navbar />
       {/* Hero Section with Slideshow */}
       <section className="h-[55vh] md:h-[70vh] bg-black flex items-center justify-center text-white relative">
-        <div ref={sliderRef} className="keen-slider w-full h-full rounded-2xl overflow-hidden shadow-xl">
+        <div ref={combinedRef} className="keen-slider w-full h-full rounded-2xl overflow-hidden shadow-xl">
           {filteredTrips.length > 0 ? (
             filteredTrips.slice(0, 8).map((trip) => (
               <div key={trip._id} className="keen-slider__slide flex items-center justify-center h-full relative">
@@ -156,7 +173,7 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-6 text-center">
-        <p>&copy; 2025 Trovol Travel. All rights reserved.</p>
+        <p>&copy; 2025 Khouloud Travel. All rights reserved.</p>
       </footer>
     </div>
   );

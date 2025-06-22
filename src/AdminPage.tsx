@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import Navbar from "./components/Navbar"; // Adjust path if needed
 
 interface Activity {
   name: string;
@@ -50,8 +51,43 @@ const AdminPage = () => {
   const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', image: '' });
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [bookingEditMap, setBookingEditMap] = useState<Record<string, Partial<Booking>>>({});
-  
+  const [waNumber, setWaNumber] = useState('');         // Current number (fetched from backend)
+  const [waNumberInput, setWaNumberInput] = useState(''); // Input for the form
+  const [waSaveStatus, setWaSaveStatus] = useState('');
+
   void loading;
+
+  // Fetch WhatsApp number on mount
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/whatsapp-number`)
+      .then(res => res.json())
+      .then(data => {
+        setWaNumber(data.number);
+        setWaNumberInput(data.number);
+      })
+      .catch(() => setWaNumber(''));
+  }, []);
+
+  // Save WhatsApp number
+  const handleWaNumberSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setWaSaveStatus('');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/whatsapp-number`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number: waNumberInput })
+      });
+      if (res.ok) {
+        setWaNumber(waNumberInput);
+        setWaSaveStatus('✅ Number saved!');
+      } else {
+        setWaSaveStatus('❌ Failed to save number');
+      }
+    } catch {
+      setWaSaveStatus('❌ Error saving number');
+    }
+  };
 
   // For image editing
   const [imageEditTripId, setImageEditTripId] = useState<string | null>(null);
@@ -220,300 +256,328 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+    <div className="bg-white text-gray-900">
+      <Navbar />
+      <div className="p-6 max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
-      <div className="mb-10">
-        <h2 className="text-xl font-semibold mb-2">Calendar of Trips</h2>
-        <FullCalendar plugins={[dayGridPlugin]} initialView="dayGridMonth" events={calendarEvents} height={500} />
-      </div>
-
-      <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <input type="text" name="destination" placeholder="Destination" value={tripForm.destination} onChange={handleTripChange} className="border p-2 rounded" required />
-        <input type="date" name="date" value={tripForm.date} onChange={handleTripChange} className="border p-2 rounded" required />
-        <input type="number" name="seats" placeholder="Seats" value={tripForm.seats} onChange={handleTripChange} className="border p-2 rounded" required />
-        <select name="gender" value={tripForm.gender} onChange={handleTripChange} className="border p-2 rounded">
-          <option value="all">All</option>
-          <option value="female">Women Only</option>
-        </select>
-        <input type="number" name="price" placeholder="Price" value={tripForm.price} onChange={handleTripChange} className="border p-2 rounded" required />
-        <input type="text" name="image" placeholder="Image URL" value={tripForm.image} onChange={handleTripChange} className="border p-2 rounded" required />
-        <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
-      </form>
-      {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
-
-      <h2 className="text-xl font-semibold mt-10 mb-2">Trips</h2>
-      <div className="flex gap-4 mb-2">
-        <select value={filterDestination} onChange={(e) => setFilterDestination(e.target.value)} className="border p-2 rounded">
-          <option value="">All Destinations</option>
-          {uniqueDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
-        </select>
-        <select value={filterDate} onChange={(e) => setFilterDate(e.target.value)} className="border p-2 rounded">
-          <option value="">All Dates</option>
-          {uniqueDates.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
-      </div>
-      <table className="min-w-full border mb-10">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-2 py-1">Destination</th>
-            <th className="border px-2 py-1">Date</th>
-            <th className="border px-2 py-1">Seats</th>
-            <th className="border px-2 py-1">Gender</th>
-            <th className="border px-2 py-1">Price</th>
-            <th className="border px-2 py-1">Image</th>
-            <th className="border px-2 py-1">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredTrips.map((trip) => (
-            <tr key={trip._id}>
-              {editingTripId === trip._id ? (
-                <>
-                  <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                  <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                  <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                  <td>
-                    <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
-                      <option value="all">All</option>
-                      <option value="female">Women Only</option>
-                    </select>
-                  </td>
-                  <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                  <td>
-                    {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
-                  </td>
-                  <td>
-                    <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                    <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td className="border px-2 py-1">{trip.destination}</td>
-                  <td className="border px-2 py-1">{trip.date}</td>
-                  <td className="border px-2 py-1">{trip.seats}</td>
-                  <td className="border px-2 py-1">{trip.gender}</td>
-                  <td className="border px-2 py-1">{trip.price} MAD</td>
-                  <td className="border px-2 py-1">
-                    {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
-                    {imageEditTripId === trip._id ? (
-                      <div className="flex flex-col">
-                        <input
-                          type="text"
-                          value={imageEditUrl}
-                          onChange={(e) => setImageEditUrl(e.target.value)}
-                          placeholder="Image URL"
-                          className="border p-1 rounded mb-1"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            className="bg-green-600 text-white px-2 py-1 rounded"
-                            onClick={() => handleImageSave(trip._id)}
-                            type="button"
-                          >
-                            Save
-                          </button>
-                          <button
-                            className="bg-gray-500 text-white px-2 py-1 rounded"
-                            onClick={() => {
-                              setImageEditTripId(null);
-                              setImageEditUrl('');
-                            }}
-                            type="button"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
-                        onClick={() => {
-                          setImageEditTripId(trip._id);
-                          setImageEditUrl(trip.image || '');
-                        }}
-                        type="button"
-                      >
-                        {trip.image ? 'Edit Image' : 'Add Image'}
-                      </button>
-                    )}
-                  </td>
-                  <td className="border px-2 py-1">
-                    <button
-                      onClick={() => handleOpenActivitiesModal(trip)}
-                      className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
-                      type="button"
-                    >
-                      Activities
-                    </button>
-                    <button
-                      onClick={() => handleEditClick(trip)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded"
-                      type="button"
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* ===== Activities Modal ===== */}
-      {activityModalTripId && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-            <h3 className="text-xl font-semibold mb-4">Edit Activities</h3>
-            <ul className="space-y-3 mb-3">
-              {modalActivities.map((a, i) => (
-                <li key={i} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    placeholder="Name"
-                    value={a.name}
-                    onChange={e => {
-                      const updated = [...modalActivities];
-                      updated[i].name = e.target.value;
-                      setModalActivities(updated);
-                    }}
-                    className="border p-1 rounded w-28"
-                    required
-                  />
-                  <input
-                    type="time"
-                    value={a.hour}
-                    onChange={e => {
-                      const updated = [...modalActivities];
-                      updated[i].hour = e.target.value;
-                      setModalActivities(updated);
-                    }}
-                    className="border p-1 rounded w-20"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Period"
-                    value={a.period}
-                    onChange={e => {
-                      const updated = [...modalActivities];
-                      updated[i].period = e.target.value;
-                      setModalActivities(updated);
-                    }}
-                    className="border p-1 rounded w-16"
-                    required
-                  />
-                  <select
-                    value={a.optional ? 'yes' : 'no'}
-                    onChange={e => {
-                      const updated = [...modalActivities];
-                      updated[i].optional = e.target.value === 'yes';
-                      setModalActivities(updated);
-                    }}
-                    className="border p-1 rounded"
-                  >
-                    <option value="no">Required</option>
-                    <option value="yes">Optional</option>
-                  </select>
-                  <button
-                    type="button"
-                    className="bg-red-500 text-white px-2 rounded"
-                    onClick={() => {
-                      const updated = [...modalActivities];
-                      updated.splice(i, 1);
-                      setModalActivities(updated);
-                    }}
-                  >✕</button>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              className="bg-green-600 text-white px-3 py-1 rounded mb-4"
-              onClick={() =>
-                setModalActivities([
-                  ...modalActivities,
-                  { name: '', hour: '', period: '', optional: false },
-                ])
-              }
-            >
-              + Add Activity
-            </button>
-            <div className="flex gap-3 justify-end">
-              <button onClick={handleSaveActivities} className="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
-              <button onClick={handleCloseActivitiesModal} className="bg-gray-400 text-white px-4 py-1 rounded">Cancel</button>
-            </div>
-          </div>
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-2">Calendar of Trips</h2>
+          <FullCalendar plugins={[dayGridPlugin]} initialView="dayGridMonth" events={calendarEvents} height={500} />
         </div>
-      )}
 
-      {/* BOOKINGS TABLE */}
-      <h2 className="text-xl font-semibold mb-2">Bookings</h2>
-      <div className="flex gap-4 mb-2">
-        <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
-          <option value="">All Destinations</option>
-          {uniqueBookingDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
-        </select>
-        <select value={bookingFilterDate} onChange={(e) => setBookingFilterDate(e.target.value)} className="border p-2 rounded">
-          <option value="">All Dates</option>
-          {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
-      </div>
-      <table className="min-w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-2 py-1">Name</th>
-            <th className="border px-2 py-1">Phone</th>
-            <th className="border px-2 py-1">Destination</th>
-            <th className="border px-2 py-1">Date</th>
-            <th className="border px-2 py-1">Status</th>
-            <th className="border px-2 py-1">Red Flag</th>
-            <th className="border px-2 py-1">Comment</th>
-            <th className="border px-2 py-1">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredBookings.map((b) => (
-            <tr key={b._id}>
-              <td className="border px-2 py-1">{b.name}</td>
-              <td className="border px-2 py-1">{b.phone}</td>
-              <td className="border px-2 py-1">{b.destination}</td>
-              <td className="border px-2 py-1">{b.date}</td>
-              <td className={`border px-2 py-1 ${statusCellColor(b.status)}`}>
-                {editingBookingId === b._id ? (
-                  <select value={bookingEditMap[b._id]?.status || 'pending'} onChange={(e) => handleEditBookingChange(b._id, 'status', e.target.value)}>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                ) : b.status || 'pending'}
-              </td>
-              <td className="border px-2 py-1">
-                {editingBookingId === b._id ? (
-                  <input type="checkbox" checked={bookingEditMap[b._id]?.redFlag || false} onChange={(e) => handleEditBookingChange(b._id, 'redFlag', e.target.checked)} />
-                ) : b.redFlag ? '🚩' : ''}
-              </td>
-              <td className="border px-2 py-1">
-                {editingBookingId === b._id ? (
-                  <input value={bookingEditMap[b._id]?.comment || ''} onChange={(e) => handleEditBookingChange(b._id, 'comment', e.target.value)} className="border p-1 rounded w-full" />
-                ) : b.comment || ''}
-              </td>
-              <td className="border px-2 py-1">
-                {editingBookingId === b._id ? (
+        {/* WhatsApp Number Form */}
+        <div className="mb-6 bg-gray-100 p-4 rounded shadow">
+          <form onSubmit={handleWaNumberSave} className="flex items-center gap-4">
+            <label className="font-semibold">WhatsApp Number:</label>
+            <input
+              type="text"
+              className="border p-2 rounded"
+              value={waNumberInput}
+              onChange={e => setWaNumberInput(e.target.value)}
+              placeholder="e.g. 212623456789"
+              required
+            />
+            <button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            >
+              Save
+            </button>
+            {waSaveStatus && <span className="ml-2 text-sm">{waSaveStatus}</span>}
+          </form>
+          <p className="mt-2 text-gray-600 text-sm">
+            Current WhatsApp Number: <b>{waNumber || 'Not Set'}</b>
+          </p>
+        </div>
+
+        <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <input type="text" name="destination" placeholder="Destination" value={tripForm.destination} onChange={handleTripChange} className="border p-2 rounded" required />
+          <input type="date" name="date" value={tripForm.date} onChange={handleTripChange} className="border p-2 rounded" required />
+          <input type="number" name="seats" placeholder="Seats" value={tripForm.seats} onChange={handleTripChange} className="border p-2 rounded" required />
+          <select name="gender" value={tripForm.gender} onChange={handleTripChange} className="border p-2 rounded">
+            <option value="all">All</option>
+            <option value="female">Women Only</option>
+          </select>
+          <input type="number" name="price" placeholder="Price" value={tripForm.price} onChange={handleTripChange} className="border p-2 rounded" required />
+          <input type="text" name="image" placeholder="Image URL" value={tripForm.image} onChange={handleTripChange} className="border p-2 rounded" required />
+          <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
+        </form>
+        {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
+
+        <h2 className="text-xl font-semibold mt-10 mb-2">Trips</h2>
+        <div className="flex gap-4 mb-2">
+          <select value={filterDestination} onChange={(e) => setFilterDestination(e.target.value)} className="border p-2 rounded">
+            <option value="">All Destinations</option>
+            {uniqueDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
+          </select>
+          <select value={filterDate} onChange={(e) => setFilterDate(e.target.value)} className="border p-2 rounded">
+            <option value="">All Dates</option>
+            {uniqueDates.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+        <table className="min-w-full border mb-10">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border px-2 py-1">Destination</th>
+              <th className="border px-2 py-1">Date</th>
+              <th className="border px-2 py-1">Seats</th>
+              <th className="border px-2 py-1">Gender</th>
+              <th className="border px-2 py-1">Price</th>
+              <th className="border px-2 py-1">Image</th>
+              <th className="border px-2 py-1">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTrips.map((trip) => (
+              <tr key={trip._id}>
+                {editingTripId === trip._id ? (
                   <>
-                    <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                    <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                    <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                    <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                    <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                    <td>
+                      <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
+                        <option value="all">All</option>
+                        <option value="female">Women Only</option>
+                      </select>
+                    </td>
+                    <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                    <td>
+                      {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
+                    </td>
+                    <td>
+                      <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                      <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                    </td>
                   </>
                 ) : (
-                  <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
+                  <>
+                    <td className="border px-2 py-1">{trip.destination}</td>
+                    <td className="border px-2 py-1">{trip.date}</td>
+                    <td className="border px-2 py-1">{trip.seats}</td>
+                    <td className="border px-2 py-1">{trip.gender}</td>
+                    <td className="border px-2 py-1">{trip.price} MAD</td>
+                    <td className="border px-2 py-1">
+                      {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
+                      {imageEditTripId === trip._id ? (
+                        <div className="flex flex-col">
+                          <input
+                            type="text"
+                            value={imageEditUrl}
+                            onChange={(e) => setImageEditUrl(e.target.value)}
+                            placeholder="Image URL"
+                            className="border p-1 rounded mb-1"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              className="bg-green-600 text-white px-2 py-1 rounded"
+                              onClick={() => handleImageSave(trip._id)}
+                              type="button"
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="bg-gray-500 text-white px-2 py-1 rounded"
+                              onClick={() => {
+                                setImageEditTripId(null);
+                                setImageEditUrl('');
+                              }}
+                              type="button"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
+                          onClick={() => {
+                            setImageEditTripId(trip._id);
+                            setImageEditUrl(trip.image || '');
+                          }}
+                          type="button"
+                        >
+                          {trip.image ? 'Edit Image' : 'Add Image'}
+                        </button>
+                      )}
+                    </td>
+                    <td className="border px-2 py-1">
+                      <button
+                        onClick={() => handleOpenActivitiesModal(trip)}
+                        className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
+                        type="button"
+                      >
+                        Activities
+                      </button>
+                      <button
+                        onClick={() => handleEditClick(trip)}
+                        className="bg-yellow-500 text-white px-2 py-1 rounded"
+                        type="button"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </>
                 )}
-              </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* ===== Activities Modal ===== */}
+        {activityModalTripId && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
+              <h3 className="text-xl font-semibold mb-4">Edit Activities</h3>
+              <ul className="space-y-3 mb-3">
+                {modalActivities.map((a, i) => (
+                  <li key={i} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={a.name}
+                      onChange={e => {
+                        const updated = [...modalActivities];
+                        updated[i].name = e.target.value;
+                        setModalActivities(updated);
+                      }}
+                      className="border p-1 rounded w-28"
+                      required
+                    />
+                    <input
+                      type="time"
+                      value={a.hour}
+                      onChange={e => {
+                        const updated = [...modalActivities];
+                        updated[i].hour = e.target.value;
+                        setModalActivities(updated);
+                      }}
+                      className="border p-1 rounded w-20"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Period"
+                      value={a.period}
+                      onChange={e => {
+                        const updated = [...modalActivities];
+                        updated[i].period = e.target.value;
+                        setModalActivities(updated);
+                      }}
+                      className="border p-1 rounded w-16"
+                      required
+                    />
+                    <select
+                      value={a.optional ? 'yes' : 'no'}
+                      onChange={e => {
+                        const updated = [...modalActivities];
+                        updated[i].optional = e.target.value === 'yes';
+                        setModalActivities(updated);
+                      }}
+                      className="border p-1 rounded"
+                    >
+                      <option value="no">Required</option>
+                      <option value="yes">Optional</option>
+                    </select>
+                    <button
+                      type="button"
+                      className="bg-red-500 text-white px-2 rounded"
+                      onClick={() => {
+                        const updated = [...modalActivities];
+                        updated.splice(i, 1);
+                        setModalActivities(updated);
+                      }}
+                    >✕</button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                className="bg-green-600 text-white px-3 py-1 rounded mb-4"
+                onClick={() =>
+                  setModalActivities([
+                    ...modalActivities,
+                    { name: '', hour: '', period: '', optional: false },
+                  ])
+                }
+              >
+                + Add Activity
+              </button>
+              <div className="flex gap-3 justify-end">
+                <button onClick={handleSaveActivities} className="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
+                <button onClick={handleCloseActivitiesModal} className="bg-gray-400 text-white px-4 py-1 rounded">Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* BOOKINGS TABLE */}
+        <h2 className="text-xl font-semibold mb-2">Bookings</h2>
+        <div className="flex gap-4 mb-2">
+          <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
+            <option value="">All Destinations</option>
+            {uniqueBookingDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
+          </select>
+          <select value={bookingFilterDate} onChange={(e) => setBookingFilterDate(e.target.value)} className="border p-2 rounded">
+            <option value="">All Dates</option>
+            {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+        <table className="min-w-full border">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border px-2 py-1">Name</th>
+              <th className="border px-2 py-1">Phone</th>
+              <th className="border px-2 py-1">Destination</th>
+              <th className="border px-2 py-1">Date</th>
+              <th className="border px-2 py-1">Status</th>
+              <th className="border px-2 py-1">Red Flag</th>
+              <th className="border px-2 py-1">Comment</th>
+              <th className="border px-2 py-1">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredBookings.map((b) => (
+              <tr key={b._id}>
+                <td className="border px-2 py-1">{b.name}</td>
+                <td className="border px-2 py-1">{b.phone}</td>
+                <td className="border px-2 py-1">{b.destination}</td>
+                <td className="border px-2 py-1">{b.date}</td>
+                <td className={`border px-2 py-1 ${statusCellColor(b.status)}`}>
+                  {editingBookingId === b._id ? (
+                    <select value={bookingEditMap[b._id]?.status || 'pending'} onChange={(e) => handleEditBookingChange(b._id, 'status', e.target.value)}>
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  ) : b.status || 'pending'}
+                </td>
+                <td className="border px-2 py-1">
+                  {editingBookingId === b._id ? (
+                    <input type="checkbox" checked={bookingEditMap[b._id]?.redFlag || false} onChange={(e) => handleEditBookingChange(b._id, 'redFlag', e.target.checked)} />
+                  ) : b.redFlag ? '🚩' : ''}
+                </td>
+                <td className="border px-2 py-1">
+                  {editingBookingId === b._id ? (
+                    <input value={bookingEditMap[b._id]?.comment || ''} onChange={(e) => handleEditBookingChange(b._id, 'comment', e.target.value)} className="border p-1 rounded w-full" />
+                  ) : b.comment || ''}
+                </td>
+                <td className="border px-2 py-1">
+                  {editingBookingId === b._id ? (
+                    <>
+                      <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                      <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                    </>
+                  ) : (
+                    <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
