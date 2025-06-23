@@ -68,6 +68,11 @@ const AdminPage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Admins fetched:", data);
+          setAdmins(data);
+        }
         setAdmins(await res.json());
       }
     } finally {
