@@ -57,6 +57,27 @@ const AdminPage = () => {
   const [waSaveStatus, setWaSaveStatus] = useState('');
   const [adminForm, setAdminForm] = useState({ username: '', email: '', password: '' });
   const [adminCreateMessage, setAdminCreateMessage] = useState('');
+  const [admins, setAdmins] = useState<{username: string, email: string, _id: string}[]>([]);
+  const [adminsLoading, setAdminsLoading] = useState(true);
+
+  const fetchAdmins = async () => {
+    setAdminsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/admins`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setAdmins(await res.json());
+      }
+    } finally {
+      setAdminsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
 
   const handleAdminFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAdminForm({ ...adminForm, [e.target.name]: e.target.value });
@@ -79,6 +100,7 @@ const AdminPage = () => {
       if (res.ok) {
         setAdminCreateMessage('✅ Admin account created');
         setAdminForm({ username: '', email: '', password: '' });
+        fetchAdmins(); // refresh the list
       } else {
         setAdminCreateMessage(`❌ ${data.message || 'Error'}`);
       }
@@ -333,6 +355,32 @@ const AdminPage = () => {
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Create Admin</button>
             {adminCreateMessage && <span className="text-sm ml-2">{adminCreateMessage}</span>}
           </form>
+        </div>
+        {/* ===== List of All Admins ===== */}
+        <div className="mt-6 bg-yellow-50 p-4 rounded shadow">
+          <h2 className="font-semibold mb-2">All Admin Accounts</h2>
+          {adminsLoading ? (
+            <div>Loading admins...</div>
+          ) : admins.length === 0 ? (
+            <div>No admins found.</div>
+          ) : (
+            <table className="min-w-full border">
+              <thead>
+                <tr className="bg-yellow-100">
+                  <th className="border px-2 py-1">Username</th>
+                  <th className="border px-2 py-1">Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {admins.map(a => (
+                  <tr key={a._id}>
+                    <td className="border px-2 py-1">{a.username}</td>
+                    <td className="border px-2 py-1">{a.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

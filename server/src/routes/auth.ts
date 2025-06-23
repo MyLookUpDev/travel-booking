@@ -159,4 +159,15 @@ router.post("/reset-password/:token", async (req, res) => {
   }
 });
 
+router.get("/admins", authenticateJWT, async (req, res) => {
+  try {
+    if ((req as any).user.role !== "admin")
+      return res.status(403).json({ message: "Forbidden" });
+    const admins = await User.find({ role: "admin" }).select("username email");
+    res.json(admins);
+  } catch {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
