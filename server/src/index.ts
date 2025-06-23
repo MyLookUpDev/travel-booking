@@ -27,7 +27,7 @@ app.use(cors({
     "https://travel-booking-i4fh.onrender.com"
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', "Authorization"],
 }));
 
 app.use(express.json());
