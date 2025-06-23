@@ -80,7 +80,7 @@ const BookingForm = () => {
   // On mount: prefill from localStorage, then from URL if available
   useEffect(() => {
     const saved = localStorage.getItem('bookingForm');
-    let base = saved ? JSON.parse(saved) : {};
+    const base = saved ? JSON.parse(saved) : {};
     const destination = query.get('destination') || '';
     const date = query.get('date') || '';
     setFormData((fd) => ({
@@ -196,7 +196,18 @@ const BookingForm = () => {
   );
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-200 text-gray-900"
+      style={
+        bgImage
+          ? {
+              backgroundImage: `url('${bgImage}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }
+          : { background: '#e5e7eb' }
+      }
+    >
       <Navbar />
       <div
         className={`max-w-xl mx-auto p-6 rounded-lg shadow relative`}
@@ -208,11 +219,11 @@ const BookingForm = () => {
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
               }
-            : { background: '#fff' }
+            : { background: '#f3f4f6' }
         }
       >
         {bgImage && (
-          <div className="absolute inset-0 bg-white bg-opacity-70 rounded-lg pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gray-100 bg-opacity-70 rounded-lg pointer-events-none"></div>
         )}
 
         <div className="relative z-10">
@@ -225,7 +236,7 @@ const BookingForm = () => {
               <div ref={previewRef}>
                 <QRCodeCanvas value={barcodeData} size={150} />
                 {/* Booking Preview */}
-                <div className="text-left text-gray-700 bg-gray-50 p-4 rounded w-64 mx-auto">
+                <div className="text-left text-gray-700 bg-gray-100 p-4 rounded w-64 mx-auto">
                   <h3 className="font-bold mb-2 text-lg">Booking Summary</h3>
                   <p><strong>Name:</strong> {formData.name}</p>
                   <p><strong>Phone:</strong> {formData.phone}</p>

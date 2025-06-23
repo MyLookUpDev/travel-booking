@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import Booking from '../models/Booking.js' // ✅ Include .ts
+import Booking from '../models/Booking' // ✅ Include .ts
+import { authenticateJWT } from "../middleware/auth";
 
 const router = Router()
 
@@ -16,6 +17,11 @@ router.post('/', async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: 'Booking failed', details: err })
   }
+})
+
+router.get("/", authenticateJWT, (req, res) => {
+  // You can now use (req as any).user to access the user's info from the JWT
+  res.json({ message: `Hello, ${(req as any).user.username}` });
 })
 
 export default router

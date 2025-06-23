@@ -2,11 +2,13 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import bookingRoutes from './routes/bookingRoutes.js';
-import tripRoutes from './routes/tripRoutes.js';
+import bookingRoutes from './routes/bookingRoutes';
+import tripRoutes from './routes/tripRoutes';
 import path from "path";
-import { fileURLToPath } from "url";
-import whatsappNumberRoutes from "./routes/whatsappNumber.js";
+import whatsappNumberRoutes from "./routes/whatsappNumber";
+import authRouter from "./routes/auth";
+import "dotenv/config";
+
 
 dotenv.config();
 
@@ -14,8 +16,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || '';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+//const __filename = fileURLToPath(import.meta.url);
+//const __dirname = path.dirname(__filename);
 
 // CORS config
 app.use(cors({
@@ -34,10 +36,11 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use("/api/whatsapp-number", whatsappNumberRoutes);
+app.use("/api/auth", authRouter);
 
 // Serve frontend static files (optional, for combined prod deploy)
 app.use(express.static(path.join(__dirname, "../../dist")));
-app.get(/^\/(?!api).*/, (req, res) => {
+app.get(/^\/(?!api).* /, (req, res) => {
   res.sendFile(path.join(__dirname, "..","..","dist","index.html"));
 });
 
@@ -51,3 +54,4 @@ mongoose
   .catch((err) => {
     console.error('❌ MongoDB connection failed:', err);
   });
+

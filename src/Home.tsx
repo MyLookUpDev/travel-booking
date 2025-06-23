@@ -81,7 +81,7 @@ const Home = () => {
   );
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-200 text-gray-900">
       <Navbar />
       {/* Hero Section with Slideshow */}
       <section className="h-[55vh] md:h-[70vh] bg-black flex items-center justify-center text-white relative">
@@ -119,7 +119,7 @@ const Home = () => {
       </section>
 
       {/* Filters */}
-      <section className="bg-gray-50 py-6 px-6 flex flex-wrap justify-center gap-6 items-center">
+      <section className="bg-gray-100 py-1 px-1 flex flex-wrap justify-center gap-6 items-center">
         <div>
           <label className="font-semibold mr-2">Gender:</label>
           <select

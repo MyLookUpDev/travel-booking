@@ -1,5 +1,5 @@
 import { Router } from "express";
-import Setting from "../models/Setting.js";
+import Setting from "../models/Setting";
 const router = Router();
 
 // GET current WhatsApp number

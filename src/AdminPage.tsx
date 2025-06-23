@@ -256,7 +256,7 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-gray-50 text-gray-900">
       <Navbar />
       <div className="p-6 max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
