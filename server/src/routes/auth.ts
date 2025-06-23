@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/User.ts";
+import User from "../models/User";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
@@ -62,6 +62,26 @@ router.post("/login", async (req, res) => {
     { expiresIn: "1d" }
   );
   res.json({ token }); // send token to frontend
+});
+
+// ====== Admin Create (NEW) ======
+router.post("/create-admin", authenticateJWT, async (req, res) => {
+  try {
+    // Only admins can create another admin
+    if ((req as any).user.role !== "admin")
+      return res.status(403).json({ message: "Forbidden" });
+    const { username, email, password } = req.body;
+    if (!username || !email || !password)
+      return res.status(400).json({ message: "All fields required" });
+    const exists = await User.findOne({ $or: [{ username }, { email }] });
+    if (exists) return res.status(400).json({ message: "User exists" });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.create({ username, email, password: hashedPassword, role: "admin" });
+    res.status(201).json({ message: "Admin account created" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // Auth middleware

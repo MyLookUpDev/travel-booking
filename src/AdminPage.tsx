@@ -4,6 +4,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import Navbar from "./components/Navbar"; // Adjust path if needed
 
+
 interface Activity {
   name: string;
   hour: string;
@@ -54,6 +55,37 @@ const AdminPage = () => {
   const [waNumber, setWaNumber] = useState('');         // Current number (fetched from backend)
   const [waNumberInput, setWaNumberInput] = useState(''); // Input for the form
   const [waSaveStatus, setWaSaveStatus] = useState('');
+  const [adminForm, setAdminForm] = useState({ username: '', email: '', password: '' });
+  const [adminCreateMessage, setAdminCreateMessage] = useState('');
+
+  const handleAdminFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAdminForm({ ...adminForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAdminFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminCreateMessage('');
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/create-admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(adminForm)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAdminCreateMessage('✅ Admin account created');
+        setAdminForm({ username: '', email: '', password: '' });
+      } else {
+        setAdminCreateMessage(`❌ ${data.message || 'Error'}`);
+      }
+    } catch {
+      setAdminCreateMessage('❌ Server error');
+    }
+  };
 
   void loading;
 
@@ -289,6 +321,18 @@ const AdminPage = () => {
           <p className="mt-2 text-gray-600 text-sm">
             Current WhatsApp Number: <b>{waNumber || 'Not Set'}</b>
           </p>
+        </div>
+
+        {/* ===== Add Admin Account (for admins only) ===== */}
+        <div className="mb-6 bg-yellow-100 p-4 rounded shadow">
+          <h2 className="font-semibold mb-2">Create Admin Account</h2>
+          <form onSubmit={handleAdminFormSubmit} className="flex flex-col md:flex-row gap-3">
+            <input name="username" value={adminForm.username} onChange={handleAdminFormChange} className="border p-2 rounded" placeholder="Username" required />
+            <input name="email" value={adminForm.email} onChange={handleAdminFormChange} className="border p-2 rounded" placeholder="Email" type="email" required />
+            <input name="password" value={adminForm.password} onChange={handleAdminFormChange} className="border p-2 rounded" placeholder="Password" type="password" required />
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Create Admin</button>
+            {adminCreateMessage && <span className="text-sm ml-2">{adminCreateMessage}</span>}
+          </form>
         </div>
 
         <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

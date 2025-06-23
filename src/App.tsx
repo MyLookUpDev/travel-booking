@@ -8,6 +8,7 @@ import AdminPage from './AdminPage'
 import Login from "./pages/Login"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
+import Register from "./pages/Register"
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   )
