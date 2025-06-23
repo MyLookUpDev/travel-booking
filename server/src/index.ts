@@ -23,7 +23,8 @@ const MONGO_URI = process.env.MONGO_URI || '';
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://travel-booking-mu.vercel.app'
+    'https://travel-booking-mu.vercel.app',
+    "https://travel-booking-i4fh.onrender.com"
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
