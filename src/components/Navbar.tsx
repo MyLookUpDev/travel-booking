@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const [username, setUsername] = useState<string | null>(null);
-  const [waNumber, setWaNumber] = useState('');         // Current number (fetched from backend)
+  const [waNumber] = useState('');         // Current number (fetched from backend)
   const w_path = `https://wa.me/${waNumber}`;
 
   useEffect(() => {
