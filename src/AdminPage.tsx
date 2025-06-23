@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import Navbar from "./components/Navbar"; // Adjust path if needed
-
+import * as XLSX from "xlsx";
 
 interface Activity {
   name: string;
@@ -295,6 +295,32 @@ const AdminPage = () => {
     }
   };
 
+  const handleDeleteAdmin = async (id: string) => {
+    const token = localStorage.getItem("token");
+    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/admins/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    fetchAdmins(); // refresh
+  };
+
+  const handleDeleteTrip = async (id: string) => {
+    const token = localStorage.getItem("token");
+    await fetch(`${import.meta.env.VITE_API_URL}/api/trips/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  };
+
+  const handleDeleteBooking = async (id: string) => {
+    const token = localStorage.getItem("token");
+    await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  };
+
+
   const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
   const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
   const uniqueBookingDestinations = Array.from(new Set(bookings.map((b) => b.destination)));
@@ -309,6 +335,22 @@ const AdminPage = () => {
     if (status === 'confirmed') return 'bg-green-400';
     if (status === 'rejected') return 'bg-red-400';
     return 'bg-blue-200';
+  };
+
+  // For trips
+  const handleExportTrips = () => {
+    const ws = XLSX.utils.json_to_sheet(trips);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Trips");
+    XLSX.writeFile(wb, "trips.xlsx");
+  };
+
+  // For bookings
+  const handleExportBookings = () => {
+    const ws = XLSX.utils.json_to_sheet(bookings);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bookings");
+    XLSX.writeFile(wb, "bookings.xlsx");
   };
 
   return (
@@ -378,6 +420,7 @@ const AdminPage = () => {
                   <tr key={a._id}>
                     <td className="border px-2 py-1">{a.username}</td>
                     <td className="border px-2 py-1">{a.email}</td>
+                    <button onClick={() => handleDeleteAdmin(a._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
                   </tr>
                 ))}
               </tbody>
@@ -401,6 +444,7 @@ const AdminPage = () => {
 
         <h2 className="text-xl font-semibold mt-10 mb-2">Trips</h2>
         <div className="flex gap-4 mb-2">
+          <button onClick={handleExportTrips} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Trips to Excel</button>
           <select value={filterDestination} onChange={(e) => setFilterDestination(e.target.value)} className="border p-2 rounded">
             <option value="">All Destinations</option>
             {uniqueDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
@@ -443,6 +487,7 @@ const AdminPage = () => {
                     <td>
                       <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
                       <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                      <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
                     </td>
                   </>
                 ) : (
@@ -609,6 +654,7 @@ const AdminPage = () => {
         {/* BOOKINGS TABLE */}
         <h2 className="text-xl font-semibold mb-2">Bookings</h2>
         <div className="flex gap-4 mb-2">
+          <button onClick={handleExportBookings} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Bookings to Excel</button>
           <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
             <option value="">All Destinations</option>
             {uniqueBookingDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
@@ -623,6 +669,8 @@ const AdminPage = () => {
             <tr className="bg-gray-100">
               <th className="border px-2 py-1">Name</th>
               <th className="border px-2 py-1">Phone</th>
+              <th className="border px-2 py-1">Age</th>
+              <th className="border px-2 py-1">Gender</th>
               <th className="border px-2 py-1">Destination</th>
               <th className="border px-2 py-1">Date</th>
               <th className="border px-2 py-1">Status</th>
@@ -636,6 +684,8 @@ const AdminPage = () => {
               <tr key={b._id}>
                 <td className="border px-2 py-1">{b.name}</td>
                 <td className="border px-2 py-1">{b.phone}</td>
+                <td className="border px-2 py-1">{b.age}</td>
+                <td className="border px-2 py-1">{b.gender}</td>
                 <td className="border px-2 py-1">{b.destination}</td>
                 <td className="border px-2 py-1">{b.date}</td>
                 <td className={`border px-2 py-1 ${statusCellColor(b.status)}`}>
@@ -667,6 +717,7 @@ const AdminPage = () => {
                     <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
                   )}
                 </td>
+                <button onClick={() => handleDeleteBooking(b._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
               </tr>
             ))}
           </tbody>

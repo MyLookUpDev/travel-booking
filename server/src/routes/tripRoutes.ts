@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import Trip from '../models/Trip';
+import { authenticateJWT } from '../middleware/auth';
 
 const router = Router();
 
@@ -26,6 +27,14 @@ router.put('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to update trip', details: err });
   }
+});
+
+
+// Delete trip (in tripRoutes.ts)
+router.delete("/:id", authenticateJWT, async (req, res) => {
+  // Only allow admins!
+  await Trip.findByIdAndDelete(req.params.id);
+  res.json({ message: "Trip deleted" });
 });
 
 export default router;

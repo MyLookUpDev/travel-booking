@@ -105,6 +105,13 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+// Delete admin (in auth.ts)
+router.delete("/admins/:id", authenticateJWT, async (req, res) => {
+  if ((req as any).user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
+  await User.findByIdAndDelete(req.params.id);
+  res.json({ message: "Admin deleted" });
+});
+
 // Password reset - Request
 router.post("/forgot-password", async (req, res) => {
   try {

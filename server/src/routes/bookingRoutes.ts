@@ -24,4 +24,10 @@ router.get("/", authenticateJWT, (req, res) => {
   res.json({ message: `Hello, ${(req as any).user.username}` });
 })
 
+// Delete booking (in bookingRoutes.ts)
+router.delete("/:id", authenticateJWT, async (req, res) => {
+  await Booking.findByIdAndDelete(req.params.id);
+  res.json({ message: "Booking deleted" });
+});
+
 export default router
