@@ -25,6 +25,8 @@ const Home = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [genderFilter, setGenderFilter] = useState('');
   const [weekendOnly, setWeekendOnly] = useState(false);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // ignore time
 
   // Slideshow logic
   const sliderDomRef = useRef<HTMLDivElement>(null); // <-- create a DOM ref
@@ -76,8 +78,9 @@ const Home = () => {
   // Filter trips for packages and slideshow
   const filteredTrips = trips.filter(
     (t) =>
-      (!genderFilter || t.gender === genderFilter || t.gender === 'all') &&
-      (!weekendOnly || isWeekend(t.date))
+      (genderFilter === "female" ? t.gender === "female" : true) &&
+      (!weekendOnly || isWeekend(t.date)) &&
+      (new Date(t.date) >= today) // Only today and future trips
   );
 
   return (
@@ -128,7 +131,6 @@ const Home = () => {
             onChange={(e) => setGenderFilter(e.target.value)}
           >
             <option value="">All</option>
-            <option value="male">Men Only</option>
             <option value="female">Women Only</option>
           </select>
         </div>
