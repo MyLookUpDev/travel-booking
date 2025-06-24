@@ -4,6 +4,9 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import Navbar from "./components/Navbar"; // Adjust path if needed
 import * as XLSX from "xlsx";
+import RequireAdmin from "./pages/RequireAdmin";
+
+void RequireAdmin;
 
 interface Activity {
   name: string;
@@ -153,7 +156,7 @@ const AdminPage = () => {
   const [activityModalTripId, setActivityModalTripId] = useState<string | null>(null);
   const [modalActivities, setModalActivities] = useState<Activity[]>([]);
 
-  useEffect(() => {
+  const fetchAllData = () => {
     fetch(`${import.meta.env.VITE_API_URL}/api/bookings`)
       .then((res) => res.json())
       .then((data) => {
@@ -164,6 +167,10 @@ const AdminPage = () => {
     fetch(`${import.meta.env.VITE_API_URL}/api/trips`)
       .then((res) => res.json())
       .then((data) => setTrips(data));
+  };
+
+  useEffect(() => {
+    fetchAllData();
   }, []);
 
   const handleEditBookingClick = (b: Booking) => {
@@ -310,6 +317,7 @@ const AdminPage = () => {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
+    fetchAllData(); // refresh trips
   };
 
   const handleDeleteBooking = async (id: string) => {
@@ -318,6 +326,7 @@ const AdminPage = () => {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
+    fetchAllData(); // refresh bookings
   };
 
 
@@ -413,6 +422,7 @@ const AdminPage = () => {
                 <tr className="bg-yellow-100">
                   <th className="border px-2 py-1">Username</th>
                   <th className="border px-2 py-1">Email</th>
+                  <th className="border px-2 py-1">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -420,7 +430,9 @@ const AdminPage = () => {
                   <tr key={a._id}>
                     <td className="border px-2 py-1">{a.username}</td>
                     <td className="border px-2 py-1">{a.email}</td>
-                    <button onClick={() => handleDeleteAdmin(a._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                    <td className="border px-2 py-1">
+                      <button onClick={() => handleDeleteAdmin(a._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -428,19 +440,21 @@ const AdminPage = () => {
           )}
         </div>
 
-        <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <input type="text" name="destination" placeholder="Destination" value={tripForm.destination} onChange={handleTripChange} className="border p-2 rounded" required />
-          <input type="date" name="date" value={tripForm.date} onChange={handleTripChange} className="border p-2 rounded" required />
-          <input type="number" name="seats" placeholder="Seats" value={tripForm.seats} onChange={handleTripChange} className="border p-2 rounded" required />
-          <select name="gender" value={tripForm.gender} onChange={handleTripChange} className="border p-2 rounded">
-            <option value="all">All</option>
-            <option value="female">Women Only</option>
-          </select>
-          <input type="number" name="price" placeholder="Price" value={tripForm.price} onChange={handleTripChange} className="border p-2 rounded" required />
-          <input type="text" name="image" placeholder="Image URL" value={tripForm.image} onChange={handleTripChange} className="border p-2 rounded" required />
-          <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
-        </form>
-        {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
+        <div className="mt-6 bg-blue-50 p-4 rounded shadow">
+          <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <input type="text" name="destination" placeholder="Destination" value={tripForm.destination} onChange={handleTripChange} className="border p-2 rounded" required />
+            <input type="date" name="date" value={tripForm.date} onChange={handleTripChange} className="border p-2 rounded" required />
+            <input type="number" name="seats" placeholder="Seats" value={tripForm.seats} onChange={handleTripChange} className="border p-2 rounded" required />
+            <select name="gender" value={tripForm.gender} onChange={handleTripChange} className="border p-2 rounded">
+              <option value="all">All</option>
+              <option value="female">Women Only</option>
+            </select>
+            <input type="number" name="price" placeholder="Price" value={tripForm.price} onChange={handleTripChange} className="border p-2 rounded" required />
+            <input type="text" name="image" placeholder="Image URL" value={tripForm.image} onChange={handleTripChange} className="border p-2 rounded" required />
+            <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
+          </form>
+          {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
+        </div>
 
         <h2 className="text-xl font-semibold mt-10 mb-2">Trips</h2>
         <div className="flex gap-4 mb-2">
@@ -454,7 +468,7 @@ const AdminPage = () => {
             {uniqueDates.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
-        <table className="min-w-full border mb-10">
+        <table className="p-4 min-w-full border mb-10">
           <thead>
             <tr className="bg-gray-100">
               <th className="border px-2 py-1">Destination</th>
@@ -712,12 +726,12 @@ const AdminPage = () => {
                     <>
                       <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
                       <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                      <button onClick={() => handleDeleteBooking(b._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
                     </>
                   ) : (
                     <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
                   )}
                 </td>
-                <button onClick={() => handleDeleteBooking(b._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
               </tr>
             ))}
           </tbody>

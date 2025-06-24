@@ -40,28 +40,15 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, role: user.role, username: user.username },
-      JWT_SECRET,
+      process.env.JWT_SECRET || "Printf.007",
       { expiresIn: "1d" }
     );
-    res.json({ token });
+    res.json({ token });// send token to frontend
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
-  const user = await User.findOne({
-    $or: [{ username: req.body.usernameOrEmail }, { email: req.body.usernameOrEmail }]
-  });
-  if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-  const isMatch = await bcrypt.compare(req.body.password, user.password);
-  if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-
-  // JWT code (ADD THIS):
-  const token = jwt.sign(
-    { id: user._id, role: user.role, username: user.username },
-    process.env.JWT_SECRET || "Printf.007",
-    { expiresIn: "1d" }
-  );
-  res.json({ token }); // send token to frontend
+  
 });
 
 // ====== Admin Create (NEW) ======

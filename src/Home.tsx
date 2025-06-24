@@ -41,14 +41,23 @@ const Home = () => {
     sliderDomRef.current = node;
   }
 
+  // Filter trips for packages and slideshow
+  const filteredTrips = trips.filter(
+    (t) =>
+      (genderFilter === "female" ? t.gender === "female" : true) &&
+      (!weekendOnly || isWeekend(t.date)) &&
+      (new Date(t.date) >= today) // Only today and future trips
+  );
+
   // AUTOPLAY LOGIC
   useEffect(() => {
-    if (!instanceRef.current) return;
+    // Only autoplay if there are 2 or more slides
+    if (!instanceRef.current || filteredTrips.length < 2) return;
     const slider = instanceRef.current;
     let interval: NodeJS.Timeout | undefined;
     const start = () => {
       interval = setInterval(() => {
-        if (slider) slider.next();
+        if (slider && slider.track && slider.track.details) slider.next();
       }, 3000);
     };
     const stop = () => {
@@ -65,7 +74,7 @@ const Home = () => {
       node?.removeEventListener("mouseenter", stop);
       node?.removeEventListener("mouseleave", start);
     };
-  }, [instanceRef]);
+  }, [instanceRef, filteredTrips]);
 
   useEffect(() => {
     console.log(`${import.meta.env.VITE_API_URL}/api/trips`);
@@ -74,14 +83,6 @@ const Home = () => {
       .then((data) => setTrips(data))
       .catch(() => setTrips([]));
   }, []);
-
-  // Filter trips for packages and slideshow
-  const filteredTrips = trips.filter(
-    (t) =>
-      (genderFilter === "female" ? t.gender === "female" : true) &&
-      (!weekendOnly || isWeekend(t.date)) &&
-      (new Date(t.date) >= today) // Only today and future trips
-  );
 
   return (
     <div className="bg-gray-200 text-gray-900">
@@ -105,7 +106,8 @@ const Home = () => {
                     <span className="font-semibold">{trip.seats}</span> seats left
                   </p>
                   <a
-                    href="/booking"
+                    //href="/booking"
+                    href={`/booking?destination=${encodeURIComponent(trip.destination)}&date=${encodeURIComponent(trip.date)}`}
                     className="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-bold"
                   >
                     Book Now

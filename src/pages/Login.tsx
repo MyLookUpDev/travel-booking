@@ -29,7 +29,7 @@ const Login: React.FC = () => {
         if (payload.role === "admin") {
           navigate("/admin");
         } else {
-          navigate("/user-dashboard");
+          navigate("/");
         }
       } else {
         setMsg(data.message || "Login failed");
