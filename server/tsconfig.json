@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src", "types", "../src/pages/RequireAdminRoute.tsx"]
+}
