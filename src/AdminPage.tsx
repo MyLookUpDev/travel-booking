@@ -6,6 +6,8 @@ import Navbar from "./components/Navbar"; // Adjust path if needed
 import * as XLSX from "xlsx";
 import RequireAdmin from "./pages/RequireAdmin";
 
+void RequireAdmin;
+
 interface Activity {
   name: string;
   hour: string;
