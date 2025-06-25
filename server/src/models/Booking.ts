@@ -1,5 +1,20 @@
 import mongoose from 'mongoose'
 
+export interface IBooking extends Document {
+  name: string;
+  phone: string;
+  destination: string;
+  address: string;
+  cin: string;
+  date: string;
+  gender: string;
+  age: number;
+  status: string;
+  flag: boolean;
+  comment: string;
+  tripId: mongoose.Schema.Types.ObjectId;
+}
+
 const bookingSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },

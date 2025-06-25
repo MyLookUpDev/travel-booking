@@ -189,13 +189,24 @@ const AdminPage = () => {
     setBookingEditMap((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
   };
 
-  const handleSaveBooking = async (id: string) => {
+  /*const handleSaveBooking = async (id: string) => {
     const updated = bookingEditMap[id];
     const payload = {
       status: updated.status,
       flag: updated.redFlag, // Map your frontend "redFlag" to backend "flag"
       comment: updated.comment,
     };
+    await fetch(
+      `${API_URL}/api/flags/${booking.cin}`, 
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ redFlag: updated.redFlag })
+      }
+    );
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/${id}/status`, {
@@ -215,8 +226,52 @@ const AdminPage = () => {
     } catch (err) {
       alert('Server error');
     }
-  };
+  };*/
 
+  const handleSaveBooking = async (id: string) => {
+    const updated = bookingEditMap[id];
+    const token = localStorage.getItem("token");
+    // Find the actual booking to get its CIN
+    const booking = bookings.find(b => b._id === id);
+    if (!booking) return alert("Booking not found");
+
+    // 1. Update flag for ALL bookings of this CIN
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/flags/${booking.cin}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ redFlag: updated.redFlag })
+      }
+    );
+
+    // 2. Update this booking's status/comment (optional, but keep for now)
+    const payload = {
+      status: updated.status,
+      flag: updated.redFlag,
+      comment: updated.comment,
+    };
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        fetchAllData();
+        setEditingBookingId(null);
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to update booking');
+      }
+    } catch (err) {
+      alert('Server error');
+    }
+  };
 
   const handleTripChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setTripForm({ ...tripForm, [e.target.name]: e.target.value });
@@ -249,7 +304,15 @@ const AdminPage = () => {
 
   const handleEditClick = (trip: Trip) => {
     setEditingTripId(trip._id);
-    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender, price: trip.price.toString(), profit: trip.profit.toString(), image: trip.image || ''});
+    setEditForm({ 
+      destination: trip.destination || '',
+      date: trip.date || '',
+      seats: trip.seats != null ? trip.seats.toString() : '',
+      gender: trip.gender || 'all',
+      price: trip.price != null ? trip.price.toString() : '',
+      profit: trip.profit != null ? trip.profit.toString() : '', // Fix is here!
+      image: trip.image || ''
+    });
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -513,6 +576,7 @@ const AdminPage = () => {
             </select>
             <input type="number" name="price" placeholder="Price" value={tripForm.price} onChange={handleTripChange} className="border p-2 rounded" required />
             <input type="text" name="image" placeholder="Image URL" value={tripForm.image} onChange={handleTripChange} className="border p-2 rounded" required />
+            <input type="number" name="profit" placeholder="Profit" value={tripForm.profit} onChange={handleTripChange} className="border p-2 rounded" required={false} />
             <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
           </form>
           {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
@@ -538,7 +602,6 @@ const AdminPage = () => {
                 <th className="border px-2 py-1">Date</th>
                 <th className="border px-2 py-1">Seats</th>
                 <th className="border px-2 py-1">Gender</th>
-                <th className="border px-2 py-1">CIN</th>
                 <th className="border px-2 py-1">Price</th>
                 <th className="border px-2 py-1">Profit</th>
                 <th className="border px-2 py-1">Image</th>
@@ -546,102 +609,105 @@ const AdminPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredTrips.map((trip) => (
-                <tr key={trip._id}>
-                  {editingTripId === trip._id ? (
-                    <>
-                      <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                      <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                      <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                      <td>
-                        <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
-                          <option value="all">All</option>
-                          <option value="female">Women Only</option>
-                        </select>
-                      </td>
-                      <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                      <td><input type="number" value={editForm.profit} name="profit" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                      <td>
-                        {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
-                      </td>
-                      <td>
-                        <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                        <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
-                        <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="border px-2 py-1">{trip.destination}</td>
-                      <td className="border px-2 py-1">{trip.date}</td>
-                      <td className="border px-2 py-1">{trip.seats}</td>
-                      <td className="border px-2 py-1">{trip.gender}</td>
-                      <td className="border px-2 py-1">{trip.price} MAD</td>
-                      <td className="border px-2 py-1">{trip.profit} MAD</td>
-                      <td className="border px-2 py-1">
-                        {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
-                        {imageEditTripId === trip._id ? (
-                          <div className="flex flex-col">
-                            <input
-                              type="text"
-                              value={imageEditUrl}
-                              onChange={(e) => setImageEditUrl(e.target.value)}
-                              placeholder="Image URL"
-                              className="border p-1 rounded mb-1"
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                className="bg-green-600 text-white px-2 py-1 rounded"
-                                onClick={() => handleImageSave(trip._id)}
-                                type="button"
-                              >
-                                Save
-                              </button>
-                              <button
-                                className="bg-gray-500 text-white px-2 py-1 rounded"
-                                onClick={() => {
-                                  setImageEditTripId(null);
-                                  setImageEditUrl('');
-                                }}
-                                type="button"
-                              >
-                                Cancel
-                              </button>
+              {filteredTrips.map((trip) => {
+                console.log('trip id', trip._id, trip.destination);
+                return (
+                  <tr key={trip._id}>
+                    {editingTripId === trip._id ? (
+                      <>
+                        <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                        <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                        <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                        <td>
+                          <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
+                            <option value="all">All</option>
+                            <option value="female">Women Only</option>
+                          </select>
+                        </td>
+                        <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                        <td><input type="number" value={editForm.profit} name="profit" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                        <td>
+                          {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
+                        </td>
+                        <td>
+                          <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                          <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                          <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="border px-2 py-1">{trip.destination}</td>
+                        <td className="border px-2 py-1">{trip.date}</td>
+                        <td className="border px-2 py-1">{trip.seats}</td>
+                        <td className="border px-2 py-1">{trip.gender}</td>
+                        <td className="border px-2 py-1">{trip.price} MAD</td>
+                        <td className="border px-2 py-1">{trip.profit} MAD</td>
+                        <td className="border px-2 py-1">
+                          {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
+                          {imageEditTripId === trip._id ? (
+                            <div className="flex flex-col">
+                              <input
+                                type="text"
+                                value={imageEditUrl}
+                                onChange={(e) => setImageEditUrl(e.target.value)}
+                                placeholder="Image URL"
+                                className="border p-1 rounded mb-1"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  className="bg-green-600 text-white px-2 py-1 rounded"
+                                  onClick={() => handleImageSave(trip._id)}
+                                  type="button"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  className="bg-gray-500 text-white px-2 py-1 rounded"
+                                  onClick={() => {
+                                    setImageEditTripId(null);
+                                    setImageEditUrl('');
+                                  }}
+                                  type="button"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
+                          ) : (
+                            <button
+                              className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
+                              onClick={() => {
+                                setImageEditTripId(trip._id);
+                                setImageEditUrl(trip.image || '');
+                              }}
+                              type="button"
+                            >
+                              {trip.image ? 'Edit Image' : 'Add Image'}
+                            </button>
+                          )}
+                        </td>
+                        <td className="border px-2 py-1">
                           <button
-                            className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
-                            onClick={() => {
-                              setImageEditTripId(trip._id);
-                              setImageEditUrl(trip.image || '');
-                            }}
+                            onClick={() => handleOpenActivitiesModal(trip)}
+                            className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
                             type="button"
                           >
-                            {trip.image ? 'Edit Image' : 'Add Image'}
+                            Activities
                           </button>
-                        )}
-                      </td>
-                      <td className="border px-2 py-1">
-                        <button
-                          onClick={() => handleOpenActivitiesModal(trip)}
-                          className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
-                          type="button"
-                        >
-                          Activities
-                        </button>
-                        <button
-                          onClick={() => handleEditClick(trip)}
-                          className="bg-yellow-500 text-white px-2 py-1 rounded"
-                          type="button"
-                        >
-                          Edit
-                        </button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
+                          <button
+                            onClick={() => handleEditClick(trip)}
+                            className="bg-yellow-500 text-white px-2 py-1 rounded"
+                            type="button"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

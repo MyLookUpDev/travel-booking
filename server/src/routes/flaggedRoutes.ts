@@ -1,35 +1,32 @@
 import { Router } from 'express';
-import { authenticateJWT } from '../middleware/auth';
 import Flagged from '../models/Flagged';
+import Booking from '../models/Booking';
 
 const router = Router();
 
-// Only admins may use this
-router.use(authenticateJWT);
-router.use((req, res, next) => {
-  if ((req as any).user.role !== 'admin') {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  next();
-});
-
-// Get list of all flagged CINs
-router.get('/', async (_, res) => {
-  const all = await Flagged.find().sort('cin');
-  res.json(all);
-});
-
-// Upsert a flag for one CIN
 router.put('/:cin', async (req, res) => {
   const { cin } = req.params;
-  const { redFlag } = req.body as { redFlag: boolean };
+  const { redFlag } = req.body;
 
-  const updated = await Flagged.findOneAndUpdate(
-    { cin },
-    { redFlag },
-    { new: true, upsert: true }
-  );
-  res.json(updated);
+  try {
+    // Update or insert the flag in Flagged collection
+    const updated = await Flagged.findOneAndUpdate(
+      { cin },
+      { redFlag },
+      { new: true, upsert: true }
+    );
+
+    // Propagate flag to ALL bookings of this CIN
+    await Booking.updateMany(
+      { cin },
+      { $set: { flag: redFlag } }
+    );
+
+    return res.json({ message: 'Flag updated and propagated to bookings', updated });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Could not update flag', details: err });
+  }
 });
 
 export default router;
