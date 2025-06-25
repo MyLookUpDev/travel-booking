@@ -2,6 +2,7 @@ import { Router } from 'express'
 import Booking from '../models/Booking' // ✅ Include .ts
 import { authenticateJWT } from "../middleware/auth";
 import Trip from '../models/Trip';
+import Flagged from '../models/Flagged'; 
 
 const router = Router()
 
@@ -13,6 +14,8 @@ router.get('/', async (_req, res) => {
 router.post('/', async (req, res) => {
   try {
     const booking = new Booking(req.body)
+    const flagDoc = await Flagged.findOne({ cin: booking.cin });
+    booking.flag = Boolean(flagDoc?.redFlag);
     await booking.save()
     res.status(201).json(booking)
   } catch (err) {

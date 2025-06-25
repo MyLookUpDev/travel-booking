@@ -249,7 +249,7 @@ const AdminPage = () => {
 
   const handleEditClick = (trip: Trip) => {
     setEditingTripId(trip._id);
-    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender , price: trip.price.toString(), profit: trip.profit.toString(), image: trip.image || ''});
+    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender, price: trip.price.toString(), profit: trip.profit.toString(), image: trip.image || ''});
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -538,6 +538,7 @@ const AdminPage = () => {
                 <th className="border px-2 py-1">Date</th>
                 <th className="border px-2 py-1">Seats</th>
                 <th className="border px-2 py-1">Gender</th>
+                <th className="border px-2 py-1">CIN</th>
                 <th className="border px-2 py-1">Price</th>
                 <th className="border px-2 py-1">Profit</th>
                 <th className="border px-2 py-1">Image</th>
@@ -753,6 +754,7 @@ const AdminPage = () => {
                 <th className="border px-2 py-1">Phone</th>
                 <th className="border px-2 py-1">Age</th>
                 <th className="border px-2 py-1">Gender</th>
+                <th className="border px-2 py-1">CIN</th>
                 <th className="border px-2 py-1">Destination</th>
                 <th className="border px-2 py-1">Date</th>
                 <th className="border px-2 py-1">Status</th>
@@ -768,6 +770,7 @@ const AdminPage = () => {
                   <td className="border px-2 py-1">{b.phone}</td>
                   <td className="border px-2 py-1">{b.age}</td>
                   <td className="border px-2 py-1">{b.gender}</td>
+                  <td className="border px-2 py-1">{b.cin}</td>
                   <td className="border px-2 py-1">{b.destination}</td>
                   <td className="border px-2 py-1">{b.date}</td>
                   <td className={`border px-2 py-1 ${statusCellColor(b.status)}`}>

@@ -118,7 +118,7 @@ export default function Navbar() {
           >
             <a href="/" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Home</a>
             <a href="/booking" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Booking</a>
-            <a href="#packages" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Packages</a>
+            <a href="/#packages" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Packages</a>
             <a
               href={w_path}
               target="_blank"
