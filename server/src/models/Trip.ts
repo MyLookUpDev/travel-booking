@@ -9,6 +9,7 @@ const tripSchema = new mongoose.Schema(
     activities: { type: Array },
     price: { type: Number, required: false }, // ← Add this line!
     image: { type: String, required: false }, // (if you have images already)
+    profit: { type: Number, default: 0 }
   },
   { timestamps: true }
 );

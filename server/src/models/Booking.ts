@@ -9,7 +9,11 @@ const bookingSchema = new mongoose.Schema(
     cin: { type: String, required: true },
     date: { type: String, required: true },
     gender: { type: String, required: true },
-    age: { type: Number, required: true }
+    age: { type: Number, required: true },
+    status: { type: String, enum: ['pending', 'confirmed', 'rejected'], default: 'pending' },
+    flag: { type: Boolean, default: false },
+    comment: { type: String },
+    tripId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip', required: true }
   },
   { timestamps: true }
 )

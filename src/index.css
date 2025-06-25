@@ -2,3 +2,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+body { overflow-x: hidden; }
+
+/* FullCalendar event improvements */
+.trip-event {
+  background: #2563eb !important;      /* Strong blue (Tailwind blue-600) */
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  border: 2px solid #1d4ed8 !important;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.15);
+  font-size: 1rem !important;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.trip-event:hover,
+.trip-event:focus {
+  background: #ea580c !important;     /* Orange highlight on hover (Tailwind orange-600) */
+  color: #fff !important;
+  border-color: #ea580c !important;
+  transform: scale(1.08);
+  z-index: 10;
+}
+@media (max-width: 600px) {
+  .trip-event {
+    font-size: 0.9rem !important;
+    padding: 4px 0 !important;
+  }
+}
+

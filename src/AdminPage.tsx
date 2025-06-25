@@ -37,6 +37,7 @@ interface Trip {
   seats: number;
   gender: string;
   price: number;
+  profit: number;
   activities?: Activity[];
   image?: string;
 }
@@ -45,14 +46,14 @@ const AdminPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', image: '' });
+  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '' });
   const [tripMessage, setTripMessage] = useState('');
   const [filterDestination, setFilterDestination] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [bookingFilterDestination, setBookingFilterDestination] = useState('');
   const [bookingFilterDate, setBookingFilterDate] = useState('');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', image: '' });
+  const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '' });
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [bookingEditMap, setBookingEditMap] = useState<Record<string, Partial<Booking>>>({});
   const [waNumber, setWaNumber] = useState('');         // Current number (fetched from backend)
@@ -62,6 +63,7 @@ const AdminPage = () => {
   const [adminCreateMessage, setAdminCreateMessage] = useState('');
   const [admins, setAdmins] = useState<{username: string, email: string, _id: string}[]>([]);
   const [adminsLoading, setAdminsLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<{ title: string, date: string } | null>(null);
 
   const fetchAdmins = async () => {
     setAdminsLoading(true);
@@ -160,7 +162,8 @@ const AdminPage = () => {
     fetch(`${import.meta.env.VITE_API_URL}/api/bookings`)
       .then((res) => res.json())
       .then((data) => {
-        setBookings(data);
+        const mapped = data.map((b: any) => ({ ...b, redFlag: b.flag }));
+        setBookings(mapped);
         setLoading(false);
       });
 
@@ -186,11 +189,34 @@ const AdminPage = () => {
     setBookingEditMap((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
   };
 
-  const handleSaveBooking = (id: string) => {
+  const handleSaveBooking = async (id: string) => {
     const updated = bookingEditMap[id];
-    setBookings((prev) => prev.map((b) => (b._id === id ? { ...b, ...updated } : b)));
-    setEditingBookingId(null);
+    const payload = {
+      status: updated.status,
+      flag: updated.redFlag, // Map your frontend "redFlag" to backend "flag"
+      comment: updated.comment,
+    };
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        // After success, reload all bookings and trips from backend
+        fetchAllData();
+        setEditingBookingId(null);
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to update booking');
+      }
+    } catch (err) {
+      alert('Server error');
+    }
   };
+
 
   const handleTripChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setTripForm({ ...tripForm, [e.target.name]: e.target.value });
@@ -211,7 +237,7 @@ const AdminPage = () => {
         const newTrip = await res.json();
         setTrips([...trips, newTrip]);
         setTripMessage('✅ Trip added successfully');
-        setTripForm({ destination: '', date: '', seats: '', gender: 'all', price: '', image: ''  });
+        setTripForm({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: ''  });
       } else {
         setTripMessage('❌ Failed to add trip');
       }
@@ -223,7 +249,7 @@ const AdminPage = () => {
 
   const handleEditClick = (trip: Trip) => {
     setEditingTripId(trip._id);
-    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender , price: trip.price.toString(), image: trip.image || ''});
+    setEditForm({ destination: trip.destination, date: trip.date, seats: trip.seats.toString(), gender: trip.gender , price: trip.price.toString(), profit: trip.profit.toString(), image: trip.image || ''});
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -231,7 +257,7 @@ const AdminPage = () => {
   };
 
   const handleEditSubmit = async (tripId: string) => {
-    const updatedTrip = { ...editForm, seats: parseInt(editForm.seats), price: parseFloat(editForm.price)  };
+    const updatedTrip = { ...editForm, seats: parseInt(editForm.seats), price: parseFloat(editForm.price), profit: parseFloat(editForm.profit)  };
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/trips/${tripId}`, {
         method: 'PUT',
@@ -362,19 +388,55 @@ const AdminPage = () => {
     XLSX.writeFile(wb, "bookings.xlsx");
   };
 
+  function renderEventContent(eventInfo: any) {
+    return (
+      <span title={eventInfo.event.title}>
+        {eventInfo.event.title}
+      </span>
+    );
+  }
+  function handleEventClick(clickInfo: any) {
+    setSelectedEvent({
+      title: clickInfo.event.title,
+      date: clickInfo.event.startStr,
+    });
+  }
+  
+
   return (
     <div className="bg-gray-50 text-gray-900">
       <Navbar />
       <div className="p-6 max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-
         <div className="mb-10">
           <h2 className="text-xl font-semibold mb-2">Calendar of Trips</h2>
-          <FullCalendar plugins={[dayGridPlugin]} initialView="dayGridMonth" events={calendarEvents} height={500} />
+          <FullCalendar plugins={[dayGridPlugin]}
+           initialView="dayGridMonth" 
+           events={calendarEvents} 
+           height={500} 
+           eventClassNames={() => 'trip-event'} 
+           eventContent={renderEventContent} 
+           eventClick={handleEventClick}
+           />
+           {selectedEvent && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setSelectedEvent(null)}>
+                <div className="bg-white rounded-lg shadow-lg p-6 min-w-[220px] text-center" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-lg font-semibold mb-2">{selectedEvent.title}</h3>
+                  <p className="text-sm text-gray-600">{selectedEvent.date}</p>
+                  <button
+                    onClick={() => setSelectedEvent(null)}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+
         </div>
 
         {/* WhatsApp Number Form */}
-        <div className="mb-6 bg-gray-100 p-4 rounded shadow">
+        <div className="mb-6 bg-gray-100 p-4 rounded shadow w-full overflow-x-auto">
           <form onSubmit={handleWaNumberSave} className="flex items-center gap-4">
             <label className="font-semibold">WhatsApp Number:</label>
             <input
@@ -410,7 +472,7 @@ const AdminPage = () => {
           </form>
         </div>
         {/* ===== List of All Admins ===== */}
-        <div className="mt-6 bg-yellow-50 p-4 rounded shadow">
+        <div className="mt-6 bg-yellow-50 p-4 rounded shadow w-full overflow-x-auto">
           <h2 className="font-semibold mb-2">All Admin Accounts</h2>
           {adminsLoading ? (
             <div>Loading admins...</div>
@@ -456,8 +518,8 @@ const AdminPage = () => {
           {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
         </div>
 
-        <h2 className="text-xl font-semibold mt-10 mb-2">Trips</h2>
-        <div className="flex gap-4 mb-2">
+        <h2 className="text-xl font-semibold mt-10 mb-2 ">Trips</h2>
+        <div className="flex gap-4 mb-2 w-full overflow-x-auto">
           <button onClick={handleExportTrips} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Trips to Excel</button>
           <select value={filterDestination} onChange={(e) => setFilterDestination(e.target.value)} className="border p-2 rounded">
             <option value="">All Destinations</option>
@@ -468,115 +530,120 @@ const AdminPage = () => {
             {uniqueDates.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
-        <table className="p-4 min-w-full border mb-10">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border px-2 py-1">Destination</th>
-              <th className="border px-2 py-1">Date</th>
-              <th className="border px-2 py-1">Seats</th>
-              <th className="border px-2 py-1">Gender</th>
-              <th className="border px-2 py-1">Price</th>
-              <th className="border px-2 py-1">Image</th>
-              <th className="border px-2 py-1">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTrips.map((trip) => (
-              <tr key={trip._id}>
-                {editingTripId === trip._id ? (
-                  <>
-                    <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                    <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                    <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                    <td>
-                      <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
-                        <option value="all">All</option>
-                        <option value="female">Women Only</option>
-                      </select>
-                    </td>
-                    <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                    <td>
-                      {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
-                    </td>
-                    <td>
-                      <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                      <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
-                      <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td className="border px-2 py-1">{trip.destination}</td>
-                    <td className="border px-2 py-1">{trip.date}</td>
-                    <td className="border px-2 py-1">{trip.seats}</td>
-                    <td className="border px-2 py-1">{trip.gender}</td>
-                    <td className="border px-2 py-1">{trip.price} MAD</td>
-                    <td className="border px-2 py-1">
-                      {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
-                      {imageEditTripId === trip._id ? (
-                        <div className="flex flex-col">
-                          <input
-                            type="text"
-                            value={imageEditUrl}
-                            onChange={(e) => setImageEditUrl(e.target.value)}
-                            placeholder="Image URL"
-                            className="border p-1 rounded mb-1"
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              className="bg-green-600 text-white px-2 py-1 rounded"
-                              onClick={() => handleImageSave(trip._id)}
-                              type="button"
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="bg-gray-500 text-white px-2 py-1 rounded"
-                              onClick={() => {
-                                setImageEditTripId(null);
-                                setImageEditUrl('');
-                              }}
-                              type="button"
-                            >
-                              Cancel
-                            </button>
+        <div className="rounded shadow w-full overflow-x-auto">
+          <table className="p-4 min-w-full border mb-10 ">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border px-2 py-1">Destination</th>
+                <th className="border px-2 py-1">Date</th>
+                <th className="border px-2 py-1">Seats</th>
+                <th className="border px-2 py-1">Gender</th>
+                <th className="border px-2 py-1">Price</th>
+                <th className="border px-2 py-1">Profit</th>
+                <th className="border px-2 py-1">Image</th>
+                <th className="border px-2 py-1">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTrips.map((trip) => (
+                <tr key={trip._id}>
+                  {editingTripId === trip._id ? (
+                    <>
+                      <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td>
+                        <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
+                          <option value="all">All</option>
+                          <option value="female">Women Only</option>
+                        </select>
+                      </td>
+                      <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td><input type="number" value={editForm.profit} name="profit" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td>
+                        {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
+                      </td>
+                      <td>
+                        <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                        <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                        <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="border px-2 py-1">{trip.destination}</td>
+                      <td className="border px-2 py-1">{trip.date}</td>
+                      <td className="border px-2 py-1">{trip.seats}</td>
+                      <td className="border px-2 py-1">{trip.gender}</td>
+                      <td className="border px-2 py-1">{trip.price} MAD</td>
+                      <td className="border px-2 py-1">{trip.profit} MAD</td>
+                      <td className="border px-2 py-1">
+                        {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
+                        {imageEditTripId === trip._id ? (
+                          <div className="flex flex-col">
+                            <input
+                              type="text"
+                              value={imageEditUrl}
+                              onChange={(e) => setImageEditUrl(e.target.value)}
+                              placeholder="Image URL"
+                              className="border p-1 rounded mb-1"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                className="bg-green-600 text-white px-2 py-1 rounded"
+                                onClick={() => handleImageSave(trip._id)}
+                                type="button"
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="bg-gray-500 text-white px-2 py-1 rounded"
+                                onClick={() => {
+                                  setImageEditTripId(null);
+                                  setImageEditUrl('');
+                                }}
+                                type="button"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
+                        ) : (
+                          <button
+                            className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
+                            onClick={() => {
+                              setImageEditTripId(trip._id);
+                              setImageEditUrl(trip.image || '');
+                            }}
+                            type="button"
+                          >
+                            {trip.image ? 'Edit Image' : 'Add Image'}
+                          </button>
+                        )}
+                      </td>
+                      <td className="border px-2 py-1">
                         <button
-                          className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
-                          onClick={() => {
-                            setImageEditTripId(trip._id);
-                            setImageEditUrl(trip.image || '');
-                          }}
+                          onClick={() => handleOpenActivitiesModal(trip)}
+                          className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
                           type="button"
                         >
-                          {trip.image ? 'Edit Image' : 'Add Image'}
+                          Activities
                         </button>
-                      )}
-                    </td>
-                    <td className="border px-2 py-1">
-                      <button
-                        onClick={() => handleOpenActivitiesModal(trip)}
-                        className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
-                        type="button"
-                      >
-                        Activities
-                      </button>
-                      <button
-                        onClick={() => handleEditClick(trip)}
-                        className="bg-yellow-500 text-white px-2 py-1 rounded"
-                        type="button"
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                        <button
+                          onClick={() => handleEditClick(trip)}
+                          className="bg-yellow-500 text-white px-2 py-1 rounded"
+                          type="button"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* ===== Activities Modal ===== */}
         {activityModalTripId && (
@@ -667,7 +734,7 @@ const AdminPage = () => {
 
         {/* BOOKINGS TABLE */}
         <h2 className="text-xl font-semibold mb-2">Bookings</h2>
-        <div className="flex gap-4 mb-2">
+        <div className="flex gap-4 mb-2 w-full overflow-x-auto">
           <button onClick={handleExportBookings} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Bookings to Excel</button>
           <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
             <option value="">All Destinations</option>
@@ -678,64 +745,66 @@ const AdminPage = () => {
             {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
-        <table className="min-w-full border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border px-2 py-1">Name</th>
-              <th className="border px-2 py-1">Phone</th>
-              <th className="border px-2 py-1">Age</th>
-              <th className="border px-2 py-1">Gender</th>
-              <th className="border px-2 py-1">Destination</th>
-              <th className="border px-2 py-1">Date</th>
-              <th className="border px-2 py-1">Status</th>
-              <th className="border px-2 py-1">Red Flag</th>
-              <th className="border px-2 py-1">Comment</th>
-              <th className="border px-2 py-1">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBookings.map((b) => (
-              <tr key={b._id}>
-                <td className="border px-2 py-1">{b.name}</td>
-                <td className="border px-2 py-1">{b.phone}</td>
-                <td className="border px-2 py-1">{b.age}</td>
-                <td className="border px-2 py-1">{b.gender}</td>
-                <td className="border px-2 py-1">{b.destination}</td>
-                <td className="border px-2 py-1">{b.date}</td>
-                <td className={`border px-2 py-1 ${statusCellColor(b.status)}`}>
-                  {editingBookingId === b._id ? (
-                    <select value={bookingEditMap[b._id]?.status || 'pending'} onChange={(e) => handleEditBookingChange(b._id, 'status', e.target.value)}>
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  ) : b.status || 'pending'}
-                </td>
-                <td className="border px-2 py-1">
-                  {editingBookingId === b._id ? (
-                    <input type="checkbox" checked={bookingEditMap[b._id]?.redFlag || false} onChange={(e) => handleEditBookingChange(b._id, 'redFlag', e.target.checked)} />
-                  ) : b.redFlag ? '🚩' : ''}
-                </td>
-                <td className="border px-2 py-1">
-                  {editingBookingId === b._id ? (
-                    <input value={bookingEditMap[b._id]?.comment || ''} onChange={(e) => handleEditBookingChange(b._id, 'comment', e.target.value)} className="border p-1 rounded w-full" />
-                  ) : b.comment || ''}
-                </td>
-                <td className="border px-2 py-1">
-                  {editingBookingId === b._id ? (
-                    <>
-                      <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                      <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
-                      <button onClick={() => handleDeleteBooking(b._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                    </>
-                  ) : (
-                    <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
-                  )}
-                </td>
+        <div className="flex gap-4 mb-2 w-full overflow-x-auto">
+          <table className="min-w-full border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border px-2 py-1">Name</th>
+                <th className="border px-2 py-1">Phone</th>
+                <th className="border px-2 py-1">Age</th>
+                <th className="border px-2 py-1">Gender</th>
+                <th className="border px-2 py-1">Destination</th>
+                <th className="border px-2 py-1">Date</th>
+                <th className="border px-2 py-1">Status</th>
+                <th className="border px-2 py-1">Red Flag</th>
+                <th className="border px-2 py-1">Comment</th>
+                <th className="border px-2 py-1">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredBookings.map((b) => (
+                <tr key={b._id}>
+                  <td className="border px-2 py-1">{b.name}</td>
+                  <td className="border px-2 py-1">{b.phone}</td>
+                  <td className="border px-2 py-1">{b.age}</td>
+                  <td className="border px-2 py-1">{b.gender}</td>
+                  <td className="border px-2 py-1">{b.destination}</td>
+                  <td className="border px-2 py-1">{b.date}</td>
+                  <td className={`border px-2 py-1 ${statusCellColor(b.status)}`}>
+                    {editingBookingId === b._id ? (
+                      <select value={bookingEditMap[b._id]?.status || 'pending'} onChange={(e) => handleEditBookingChange(b._id, 'status', e.target.value)}>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
+                    ) : b.status || 'pending'}
+                  </td>
+                  <td className="border px-2 py-1">
+                    {editingBookingId === b._id ? (
+                      <input type="checkbox" checked={bookingEditMap[b._id]?.redFlag || false} onChange={(e) => handleEditBookingChange(b._id, 'redFlag', e.target.checked)} />
+                    ) : b.redFlag ? '🚩' : ''}
+                  </td>
+                  <td className="border px-2 py-1">
+                    {editingBookingId === b._id ? (
+                      <input value={bookingEditMap[b._id]?.comment || ''} onChange={(e) => handleEditBookingChange(b._id, 'comment', e.target.value)} className="border p-1 rounded w-full" />
+                    ) : b.comment || ''}
+                  </td>
+                  <td className="border px-2 py-1">
+                    {editingBookingId === b._id ? (
+                      <>
+                        <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                        <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                        <button onClick={() => handleDeleteBooking(b._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                      </>
+                    ) : (
+                      <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

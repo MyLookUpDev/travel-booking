@@ -9,6 +9,13 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
+type Activity = {
+  name: string;
+  hour: string;
+  period: string;
+  optional: boolean;
+};
+
 type Trip = {
   _id: string;
   destination: string;
@@ -17,6 +24,7 @@ type Trip = {
   gender: string;
   image?: string;
   price?: number;
+  activities?: Activity[];
 };
 
 const BookingForm = () => {
@@ -160,7 +168,7 @@ const BookingForm = () => {
       return setError('This trip is for women only.');
     if (age < 18) return setError('You must be at least 18 years old.');
 
-    const payload = { ...formData, age };
+    const payload = { ...formData, age, tripId: trip._id };
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
@@ -355,21 +363,40 @@ const BookingForm = () => {
 
               {/* Image and Price Preview */}
               {selectedTrip && (
-                <div className="flex items-center justify-center my-2 gap-6">
+                <div className="flex flex-col md:flex-row items-center justify-center my-2 gap-4 w-full">
+                  {/* Image */}
                   {selectedTrip.image && (
                     <img
                       src={selectedTrip.image}
                       alt="Trip preview"
-                      className="w-40 h-28 object-cover rounded shadow"
+                      className="w-40 h-28 object-cover rounded shadow mb-2 md:mb-0"
                     />
                   )}
+                  {/* Price */}
                   {selectedTrip.price !== undefined && (
-                    <span className="text-lg font-bold text-blue-800 bg-white/70 px-4 py-2 rounded">
+                    <span className="text-lg font-bold text-blue-800 bg-white/70 px-4 py-2 rounded mb-2 md:mb-0">
                       {selectedTrip.price} MAD
                     </span>
                   )}
+                  {/* Activities */}
+                  {selectedTrip.activities && selectedTrip.activities.length > 0 && (
+                    <div className="bg-white/70 rounded shadow p-2 min-w-[180px]">
+                      <span className="font-semibold text-blue-600 text-base block mb-1">Activities:</span>
+                      <ul className="text-sm space-y-1">
+                        {selectedTrip.activities.map((act, idx) => (
+                          <li key={idx} className="flex items-center gap-1">
+                            <span className="font-medium">{act.name}</span>
+                            {act.hour && <span>({act.hour})</span>}
+                            {act.period && <span className="text-gray-500">[{act.period}]</span>}
+                            {act.optional && <span className="text-xs text-yellow-600">(Optional)</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
+
 
               {/* Preview Summary */}
               <div className="bg-gray-100 p-4 rounded text-sm">
