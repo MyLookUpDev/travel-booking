@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function Navbar() {
   const [username, setUsername] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [waNumber] = useState(""); // Current number (fetched from backend)
   const w_path = `https://wa.me/${waNumber}`;
+  const [showContactMenu, setShowContactMenu] = useState(false);
+  const contactRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -25,6 +27,17 @@ export default function Navbar() {
     }
   }, [menuOpen]);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(event: MouseEvent) {
+      if (contactRef.current && !contactRef.current.contains(event.target as Node)) {
+        setShowContactMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   return (
     <header className="bg-gray-100 shadow-md py-4 px-6 flex justify-between items-center relative">
       <h1 className="text-2xl font-bold text-blue-700">Khouloud Voyage</h1>
@@ -33,14 +46,47 @@ export default function Navbar() {
         <a href="/" className="px-2 py-1 text-black bg-blue-100 rounded hover:text-blue-500">Home</a>
         <a href="/booking" className="px-2 py-1 text-black bg-blue-100 rounded hover:text-blue-500">Booking</a>
         <a href="#packages" className="px-2 py-1 text-black bg-blue-100 rounded hover:text-blue-500">Packages</a>
-        <a
-          href={w_path}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-1 text-black bg-blue-100 rounded hover:text-green-600"
-        >
-          Contact
-        </a>
+        {/* contact */} 
+        <div className="relative" ref={contactRef}>
+          <button
+            type="button"
+            className="px-4 py-1 text-black bg-blue-100 rounded hover:text-green-600"
+            onClick={() => setShowContactMenu((v) => !v)}
+          >
+            Contact
+          </button>
+          {showContactMenu && (
+            <div className="absolute right-0 mt-2 w-52 bg-white border rounded-lg shadow-lg z-20">
+              <a
+                href={w_path}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 rounded-t-lg"
+                onClick={() => setShowContactMenu(false)}
+              >
+                <span>WhatsApp</span>
+              </a>
+              <a
+                href="https://www.instagram.com/khouloud.voyage?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 hover:bg-pink-50"
+                onClick={() => setShowContactMenu(false)}
+              >
+                <span>Instagram</span>
+              </a>
+              <a
+                href="https://web.facebook.com/Khouloud.Voyage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 hover:bg-blue-100 rounded-b-lg"
+                onClick={() => setShowContactMenu(false)}
+              >
+                <span>Facebook</span>
+              </a>
+            </div>
+          )}
+        </div>
         <a href="/login" className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">
           Login
         </a>
