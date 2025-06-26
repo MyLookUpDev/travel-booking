@@ -45,7 +45,7 @@ export default function Navbar() {
       <nav className="space-x-6 flex items-center max-md:hidden">
         <a href="/" className="px-2 py-1 text-black bg-blue-100 rounded hover:text-blue-500">Home</a>
         <a href="/booking" className="px-2 py-1 text-black bg-blue-100 rounded hover:text-blue-500">Booking</a>
-        <a href="#packages" className="px-2 py-1 text-black bg-blue-100 rounded hover:text-blue-500">Packages</a>
+        <a href="/request" className="px-2 py-1 text-black bg-blue-100 rounded hover:text-blue-500">Request</a>
         {/* contact */} 
         <div className="relative" ref={contactRef}>
           <button
@@ -118,7 +118,7 @@ export default function Navbar() {
           >
             <a href="/" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Home</a>
             <a href="/booking" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Booking</a>
-            <a href="/#packages" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Packages</a>
+            <a href="/request" className="px-2 py-2 rounded hover:bg-blue-100" onClick={() => setMenuOpen(false)}>Request</a>
             <a
               href={w_path}
               target="_blank"

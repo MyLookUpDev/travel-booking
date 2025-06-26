@@ -14,6 +14,7 @@ type Trip = {
   gender: string;
   price: number;
   image?: string;
+  days?: number;
 };
 
 const isWeekend = (dateStr: string) => {
@@ -27,6 +28,7 @@ const Home = () => {
   const [weekendOnly, setWeekendOnly] = useState(false);
   const today = new Date();
   today.setHours(0, 0, 0, 0); // ignore time
+  const [sortOption, setSortOption] = useState('');
 
   // Slideshow logic
   const sliderDomRef = useRef<HTMLDivElement>(null); // <-- create a DOM ref
@@ -49,6 +51,17 @@ const Home = () => {
       (new Date(t.date) >= today) // Only today and future trips
   );
 
+  const sortedTrips = [...filteredTrips].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  // If user chooses, override with other sorts
+  if (sortOption === "cheapest") {
+    sortedTrips.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+  } else if (sortOption === "longest") {
+    sortedTrips.sort((a, b) => (b.days ?? 1) - (a.days ?? 1));
+  }
+
   // AUTOPLAY LOGIC
   useEffect(() => {
     // Only autoplay if there are 2 or more slides
@@ -58,7 +71,7 @@ const Home = () => {
     const start = () => {
       interval = setInterval(() => {
         if (slider && slider.track && slider.track.details) slider.next();
-      }, 3000);
+      }, 5000);
     };
     const stop = () => {
       if (interval) clearInterval(interval);
@@ -83,7 +96,7 @@ const Home = () => {
       .then((data) => setTrips(data))
       .catch(() => setTrips([]));
   }, []);
-
+ 
   return (
     <div className="bg-gray-200 text-gray-900">
       <Navbar />
@@ -91,7 +104,7 @@ const Home = () => {
       <section className="h-[55vh] md:h-[70vh] bg-black flex items-center justify-center text-white relative">
         <div ref={combinedRef} className="keen-slider w-full h-full rounded-2xl overflow-hidden shadow-xl">
           {filteredTrips.length > 0 ? (
-            filteredTrips.slice(0, 8).map((trip) => (
+            sortedTrips.slice(0, 8).map((trip) => (
               <div key={trip._id} className="keen-slider__slide flex items-center justify-center h-full relative">
                 <img
                   src={trip.image || '/images/banner.jpg'}
@@ -104,6 +117,11 @@ const Home = () => {
                     <span className="font-semibold">{trip.price} MAD</span>
                     &nbsp;|&nbsp;{new Date(trip.date).toLocaleDateString()} &nbsp;|&nbsp;
                     <span className="font-semibold">{trip.seats}</span> seats left
+                      {trip.days && trip.days > 1 ? (
+                        <> &nbsp;|&nbsp; <span className="font-semibold">{trip.days} days</span></>
+                      ) : (
+                        <> &nbsp;|&nbsp; <span className="font-semibold">1 day</span></>
+                      ) }
                   </p>
                   <a
                     //href="/booking"
@@ -144,6 +162,18 @@ const Home = () => {
             onChange={(e) => setWeekendOnly(e.target.checked)}
           />
         </div>
+        <div>
+          <label className="font-semibold mr-2">Sort by:</label>
+          <select
+            className="border p-2 rounded"
+            value={sortOption}
+            onChange={e => setSortOption(e.target.value)}
+          >
+            <option value="">Date (Default)</option>
+            <option value="cheapest">Cheapest</option>
+            <option value="longest">Longest</option>
+          </select>
+        </div>
       </section>
 
       {/* Packages Section */}
@@ -153,7 +183,7 @@ const Home = () => {
           {filteredTrips.length === 0 ? (
             <div className="col-span-3 text-center text-gray-500">No packages found.</div>
           ) : (
-            filteredTrips.map((trip) => (
+            sortedTrips.map((trip) => (
               <div key={trip._id} className="border rounded-lg overflow-hidden shadow hover:shadow-lg flex flex-col">
                 <img src={trip.image || '/images/package1.jpg'} alt={trip.destination} className="w-full h-48 object-cover" />
                 <div className="p-4 flex flex-col flex-1">
@@ -161,6 +191,9 @@ const Home = () => {
                   <div className="mb-1 text-blue-700 font-bold text-lg">{trip.price} MAD</div>
                   <div className="text-gray-600 mb-1">Date: {new Date(trip.date).toLocaleDateString()}</div>
                   <div className="text-gray-600 mb-2">Seats left: {trip.seats}</div>
+                  <div className="text-gray-600 mb-2">
+                    {trip.days && trip.days > 1 ? `${trip.days} days` : '1 day'}
+                  </div>
                   <div className="flex-1"></div>
                   <a
                     href={`/booking?destination=${encodeURIComponent(trip.destination)}&date=${encodeURIComponent(trip.date)}`}

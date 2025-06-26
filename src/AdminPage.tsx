@@ -40,20 +40,30 @@ interface Trip {
   profit: number;
   activities?: Activity[];
   image?: string;
+  days?: number;
+}
+
+interface UserRequest {
+  _id: string;
+  name: string;
+  cin: string;
+  phone: string;
+  message: string;
+  createdAt: string;
 }
 
 const AdminPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '' });
+  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '', days: '1'  });
   const [tripMessage, setTripMessage] = useState('');
   const [filterDestination, setFilterDestination] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [bookingFilterDestination, setBookingFilterDestination] = useState('');
   const [bookingFilterDate, setBookingFilterDate] = useState('');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '' });
+  const [editForm, setEditForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '', days: '1'  });
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [bookingEditMap, setBookingEditMap] = useState<Record<string, Partial<Booking>>>({});
   const [waNumber, setWaNumber] = useState('');         // Current number (fetched from backend)
@@ -64,6 +74,8 @@ const AdminPage = () => {
   const [admins, setAdmins] = useState<{username: string, email: string, _id: string}[]>([]);
   const [adminsLoading, setAdminsLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<{ title: string, date: string } | null>(null);
+  const [bookingCinSearch, setBookingCinSearch] = useState('');
+  const [requests, setRequests] = useState<UserRequest[]>([]);
 
   const fetchAdmins = async () => {
     setAdminsLoading(true);
@@ -189,45 +201,6 @@ const AdminPage = () => {
     setBookingEditMap((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
   };
 
-  /*const handleSaveBooking = async (id: string) => {
-    const updated = bookingEditMap[id];
-    const payload = {
-      status: updated.status,
-      flag: updated.redFlag, // Map your frontend "redFlag" to backend "flag"
-      comment: updated.comment,
-    };
-    await fetch(
-      `${API_URL}/api/flags/${booking.cin}`, 
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type':'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ redFlag: updated.redFlag })
-      }
-    );
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/${id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        // After success, reload all bookings and trips from backend
-        fetchAllData();
-        setEditingBookingId(null);
-      } else {
-        const data = await res.json();
-        alert(data.message || 'Failed to update booking');
-      }
-    } catch (err) {
-      alert('Server error');
-    }
-  };*/
-
   const handleSaveBooking = async (id: string) => {
     const updated = bookingEditMap[id];
     const token = localStorage.getItem("token");
@@ -280,7 +253,12 @@ const AdminPage = () => {
   const handleTripSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTripMessage('');
-    const payload = { ...tripForm, seats: parseInt(tripForm.seats), price: parseFloat(tripForm.price)  };
+    const payload = { 
+      ...tripForm,
+      seats: parseInt(tripForm.seats),
+      price: parseFloat(tripForm.price),
+      days: parseInt(tripForm.days),
+    };
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/trips`, {
@@ -292,7 +270,7 @@ const AdminPage = () => {
         const newTrip = await res.json();
         setTrips([...trips, newTrip]);
         setTripMessage('✅ Trip added successfully');
-        setTripForm({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: ''  });
+        setTripForm({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '', days: '' });
       } else {
         setTripMessage('❌ Failed to add trip');
       }
@@ -311,7 +289,8 @@ const AdminPage = () => {
       gender: trip.gender || 'all',
       price: trip.price != null ? trip.price.toString() : '',
       profit: trip.profit != null ? trip.profit.toString() : '', // Fix is here!
-      image: trip.image || ''
+      image: trip.image || '',
+      days: trip.days != null ? trip.days.toString() : '1'
     });
   };
 
@@ -320,7 +299,13 @@ const AdminPage = () => {
   };
 
   const handleEditSubmit = async (tripId: string) => {
-    const updatedTrip = { ...editForm, seats: parseInt(editForm.seats), price: parseFloat(editForm.price), profit: parseFloat(editForm.profit)  };
+    const updatedTrip = { 
+      ...editForm,
+      seats: parseInt(editForm.seats),
+      price: parseFloat(editForm.price),
+      profit: parseFloat(editForm.profit),
+      days: parseInt(editForm.days)
+    };
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/trips/${tripId}`, {
         method: 'PUT',
@@ -418,6 +403,12 @@ const AdminPage = () => {
     fetchAllData(); // refresh bookings
   };
 
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/requests`)
+      .then(res => res.json())
+      .then(setRequests)
+      .catch(() => setRequests([]));
+  }, []);
 
   const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
   const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
@@ -425,9 +416,19 @@ const AdminPage = () => {
   const uniqueBookingDates = Array.from(new Set(bookings.map((b) => b.date)));
 
   const filteredTrips = trips.filter((t) => (filterDestination === '' || t.destination === filterDestination) && (filterDate === '' || t.date === filterDate));
-  const filteredBookings = bookings.filter((b) => (bookingFilterDestination === '' || b.destination === bookingFilterDestination) && (bookingFilterDate === '' || b.date === bookingFilterDate));
+  const filteredBookings = bookings.filter((b) => (
+    bookingFilterDestination === '' || b.destination === bookingFilterDestination) &&
+    (bookingFilterDate === '' || b.date === bookingFilterDate) &&
+    (bookingCinSearch === '' || b.cin.toLowerCase().includes(bookingCinSearch.toLowerCase()))
+  );
 
-  const calendarEvents = trips.map((trip) => ({ title: trip.destination, date: trip.date }));
+  const calendarEvents = trips.map((trip) => ({ 
+    title: trip.destination,
+    date: trip.date,
+    end: trip.days && trip.days > 1
+    ? new Date(new Date(trip.date).getTime() + (trip.days - 1) * 24 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000) // plus days minus one, plus one to be inclusive
+    : undefined 
+  }));
 
   const statusCellColor = (status: string | undefined) => {
     if (status === 'confirmed') return 'bg-green-400';
@@ -449,6 +450,14 @@ const AdminPage = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Bookings");
     XLSX.writeFile(wb, "bookings.xlsx");
+  };
+
+  // For Requests
+  const handleExportRequests = () => {
+    const ws = XLSX.utils.json_to_sheet(requests);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Requests");
+    XLSX.writeFile(wb, "requests.xlsx");
   };
 
   function renderEventContent(eventInfo: any) {
@@ -474,27 +483,27 @@ const AdminPage = () => {
         <div className="mb-10">
           <h2 className="text-xl font-semibold mb-2">Calendar of Trips</h2>
           <FullCalendar plugins={[dayGridPlugin]}
-           initialView="dayGridMonth" 
-           events={calendarEvents} 
-           height={500} 
-           eventClassNames={() => 'trip-event'} 
-           eventContent={renderEventContent} 
-           eventClick={handleEventClick}
-           />
-           {selectedEvent && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setSelectedEvent(null)}>
-                <div className="bg-white rounded-lg shadow-lg p-6 min-w-[220px] text-center" onClick={e => e.stopPropagation()}>
-                  <h3 className="text-lg font-semibold mb-2">{selectedEvent.title}</h3>
-                  <p className="text-sm text-gray-600">{selectedEvent.date}</p>
-                  <button
-                    onClick={() => setSelectedEvent(null)}
-                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-                  >
-                    Close
-                  </button>
-                </div>
+            initialView="dayGridMonth" 
+            events={calendarEvents} 
+            height={500} 
+            eventClassNames={() => 'trip-event'} 
+            eventContent={renderEventContent} 
+            eventClick={handleEventClick}
+          /> 
+          {selectedEvent && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setSelectedEvent(null)}>
+              <div className="bg-white rounded-lg shadow-lg p-6 min-w-[220px] text-center" onClick={e => e.stopPropagation()}>
+                <h3 className="text-lg font-semibold mb-2">{selectedEvent.title}</h3>
+                <p className="text-sm text-gray-600">{selectedEvent.date}</p>
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+                >
+                  Close
+                </button>
               </div>
-            )}
+            </div>
+          )}
 
         </div>
 
@@ -569,6 +578,7 @@ const AdminPage = () => {
           <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <input type="text" name="destination" placeholder="Destination" value={tripForm.destination} onChange={handleTripChange} className="border p-2 rounded" required />
             <input type="date" name="date" value={tripForm.date} onChange={handleTripChange} className="border p-2 rounded" required />
+            <input type="days" name="days" placeholder='Days' value={tripForm.days} min={1} onChange={handleTripChange} className="border p-2 rounded" required />
             <input type="number" name="seats" placeholder="Seats" value={tripForm.seats} onChange={handleTripChange} className="border p-2 rounded" required />
             <select name="gender" value={tripForm.gender} onChange={handleTripChange} className="border p-2 rounded">
               <option value="all">All</option>
@@ -600,6 +610,7 @@ const AdminPage = () => {
               <tr className="bg-gray-100">
                 <th className="border px-2 py-1">Destination</th>
                 <th className="border px-2 py-1">Date</th>
+                <th className="border px-2 py-1">Days</th>
                 <th className="border px-2 py-1">Seats</th>
                 <th className="border px-2 py-1">Gender</th>
                 <th className="border px-2 py-1">Price</th>
@@ -617,6 +628,7 @@ const AdminPage = () => {
                       <>
                         <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
                         <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                        <td><input type="days" value={editForm.days} name="days" onChange={handleEditChange} className="border p-1 w-full" /></td>
                         <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
                         <td>
                           <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
@@ -639,6 +651,7 @@ const AdminPage = () => {
                       <>
                         <td className="border px-2 py-1">{trip.destination}</td>
                         <td className="border px-2 py-1">{trip.date}</td>
+                        <td className="border px-2 py-1">{trip.days}</td>
                         <td className="border px-2 py-1">{trip.seats}</td>
                         <td className="border px-2 py-1">{trip.gender}</td>
                         <td className="border px-2 py-1">{trip.price} MAD</td>
@@ -811,6 +824,14 @@ const AdminPage = () => {
             <option value="">All Dates</option>
             {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
+          <input
+            type="text"
+            value={bookingCinSearch}
+            onChange={e => setBookingCinSearch(e.target.value)}
+            placeholder="Search by CIN"
+            className="border p-2 rounded"
+            style={{ minWidth: 120 }}
+          />
         </div>
         <div className="flex gap-4 mb-2 w-full overflow-x-auto">
           <table className="min-w-full border">
@@ -873,6 +894,41 @@ const AdminPage = () => {
               ))}
             </tbody>
           </table>
+        </div>
+        <h2 className="text-xl font-semibold mb-2 mt-8">User Requests</h2>
+        <button
+          onClick={handleExportRequests}
+          className="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700"
+        >
+          Export to Excel
+        </button>
+        <div className="bg-gray-50 p-4 rounded shadow mb-8 overflow-x-auto">
+          {requests.length === 0 ? (
+            <div>No requests found.</div>
+          ) : (
+            <table className="min-w-full border">
+              <thead>
+                <tr>
+                  <th className="border px-2 py-1">Name</th>
+                  <th className="border px-2 py-1">CIN</th>
+                  <th className="border px-2 py-1">Phone</th>
+                  <th className="border px-2 py-1">Message</th>
+                  <th className="border px-2 py-1">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests.map((r) => (
+                  <tr key={r._id}>
+                    <td className="border px-2 py-1">{r.name}</td>
+                    <td className="border px-2 py-1">{r.cin}</td>
+                    <td className="border px-2 py-1">{r.phone}</td>
+                    <td className="border px-2 py-1">{r.message}</td>
+                    <td className="border px-2 py-1">{new Date(r.createdAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

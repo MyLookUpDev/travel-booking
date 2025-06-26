@@ -9,6 +9,7 @@ import whatsappNumberRoutes from "./routes/whatsappNumber";
 import authRouter from "./routes/auth";
 import "dotenv/config";
 import flaggedRoutes from "./routes/flaggedRoutes";
+import requestRoutes from './routes/requestRoutes';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use('/uploads', express.static('uploads'));
 app.use("/api/whatsapp-number", whatsappNumberRoutes);
 app.use("/api/auth", authRouter);
 app.use("/api/flags", flaggedRoutes);
+app.use('/api/requests', requestRoutes);
 
 // Serve frontend static files (optional, for combined prod deploy)
 app.use(express.static(path.join(__dirname, "../../dist")));

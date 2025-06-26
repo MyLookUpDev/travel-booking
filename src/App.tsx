@@ -10,6 +10,7 @@ import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
 import Register from "./pages/Register"
 import RequireAdmin from "./pages/RequireAdmin"
+import RequestForm from "./RequestForm"
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
+        <Route path="/request" element={<RequestForm />} />
         </Routes>
     </BrowserRouter>
   )
