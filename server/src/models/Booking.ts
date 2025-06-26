@@ -13,6 +13,7 @@ export interface IBooking extends Document {
   flag: boolean;
   comment: string;
   tripId: mongoose.Schema.Types.ObjectId;
+  inBus: boolean;
 }
 
 const bookingSchema = new mongoose.Schema(
@@ -28,7 +29,8 @@ const bookingSchema = new mongoose.Schema(
     status: { type: String, enum: ['pending', 'confirmed', 'rejected'], default: 'pending' },
     flag: { type: Boolean, default: false },
     comment: { type: String },
-    tripId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip', required: true }
+    tripId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip', required: true },
+    inBus: { type: Boolean, default: false }
   },
   { timestamps: true }
 )

@@ -81,4 +81,17 @@ router.put('/:id/status', async (req, res) => {
   }
 });
 
+router.put('/:id/inbus', async (req, res) => {
+  const { id } = req.params;
+  const { inBus } = req.body;
+  try {
+    const booking = await Booking.findByIdAndUpdate(id, { inBus }, { new: true });
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    res.json(booking);
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating booking' });
+    console.log(err)
+  }
+});
+
 export default router

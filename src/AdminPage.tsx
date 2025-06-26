@@ -5,6 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import Navbar from "./components/Navbar"; // Adjust path if needed
 import * as XLSX from "xlsx";
 import RequireAdmin from "./pages/RequireAdmin";
+import QrScanner from 'react-qr-scanner';
 
 void RequireAdmin;
 
@@ -28,6 +29,7 @@ interface Booking {
   status?: 'pending' | 'confirmed' | 'rejected';
   redFlag?: boolean;
   comment?: string;
+  inBus?: boolean;
 }
 
 interface Trip {
@@ -76,6 +78,10 @@ const AdminPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<{ title: string, date: string } | null>(null);
   const [bookingCinSearch, setBookingCinSearch] = useState('');
   const [requests, setRequests] = useState<UserRequest[]>([]);
+
+  const [scanResult, setScanResult] = useState('');
+  const [scanStatus, setScanStatus] = useState('');
+  const [scanning, setScanning] = useState(false);
 
   const fetchAdmins = async () => {
     setAdminsLoading(true);
@@ -474,6 +480,43 @@ const AdminPage = () => {
     });
   }
   
+  const handleScan = (data: any) => {
+    if (data && data.text) {
+      setScanResult(data.text);
+      setScanning(false);
+
+      // Parse the barcode: name|phone|destination|date
+      const [name, phone, destination, date] = data.text.split('|');
+      const found = bookings.find(
+        b => b.name === name && b.phone === phone && b.destination === destination && b.date === date
+      );
+      if (found) {
+        markAsCheckedIn(found._id);
+        setScanStatus(`✅ Booking found: ${found.name} (${found.cin})`);
+      } else {
+        setScanStatus('❌ Booking not found.');
+      }
+    }
+  };
+
+  const handleError = (err: any) => {
+    setScanStatus('Error accessing camera');
+    setScanning(false);
+    console.log(err)
+  };
+
+  const markAsCheckedIn = async (bookingId: string) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/${bookingId}/inbus`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inBus: true }),
+      });
+      fetchAllData();
+    } catch {
+      setScanStatus('❌ Failed to update booking.');
+    }
+  };
 
   return (
     <div className="bg-gray-50 text-gray-900">
@@ -847,6 +890,7 @@ const AdminPage = () => {
                 <th className="border px-2 py-1">Status</th>
                 <th className="border px-2 py-1">Red Flag</th>
                 <th className="border px-2 py-1">Comment</th>
+                <th className="border px-2 py-1">In Bus</th>
                 <th className="border px-2 py-1">Actions</th>
               </tr>
             </thead>
@@ -878,6 +922,9 @@ const AdminPage = () => {
                     {editingBookingId === b._id ? (
                       <input value={bookingEditMap[b._id]?.comment || ''} onChange={(e) => handleEditBookingChange(b._id, 'comment', e.target.value)} className="border p-1 rounded w-full" />
                     ) : b.comment || ''}
+                  </td>
+                  <td className={`border px-2 py-1 font-bold ${b.inBus ? 'bg-green-400 text-white' : 'bg-red-400 text-white'}`}>
+                    {b.inBus ? 'YES' : 'NO'}
                   </td>
                   <td className="border px-2 py-1">
                     {editingBookingId === b._id ? (
@@ -929,6 +976,48 @@ const AdminPage = () => {
               </tbody>
             </table>
           )}
+        </div>
+        <div className="mb-8 bg-green-50 rounded shadow p-6">
+          <h2 className="text-lg font-semibold mb-4">Scan Ticket Barcode</h2>
+          {!scanning ? (
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded"
+              onClick={() => {
+                setScanStatus('');
+                setScanResult('');
+                setScanning(true);
+              }}
+            >
+              Start Scanning
+            </button>
+          ) : (
+            <div className="flex flex-col items-center">
+              <div style={{ width: 250 }}>
+                <QrScanner
+                  delay={300}
+                  onError={handleError}
+                  onScan={handleScan}
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <button
+                className="mt-2 bg-gray-500 text-white px-3 py-1 rounded"
+                onClick={() => setScanning(false)}
+              >
+                Stop
+              </button>
+            </div>
+          )}
+          <div className="mt-3">
+            {scanResult && (
+              <div className="text-blue-700 font-medium mb-2">Scanned: {scanResult}</div>
+            )}
+            {scanStatus && (
+              <div className={scanStatus.startsWith('✅') ? 'text-green-700' : 'text-red-700'}>
+                {scanStatus}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
