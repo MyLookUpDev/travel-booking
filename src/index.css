@@ -30,3 +30,9 @@ body { overflow-x: hidden; }
   }
 }
 
+.keen-slider__slide {
+  min-width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+

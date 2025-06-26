@@ -31,7 +31,7 @@ const Home = () => {
   const [sortOption, setSortOption] = useState('');
 
   // Slideshow logic
-  const sliderDomRef = useRef<HTMLDivElement>(null); // <-- create a DOM ref
+  const sliderDomRef = useRef<HTMLDivElement | null>(null); // <-- create a DOM ref
   const [sliderRefCallback, instanceRef] = useKeenSlider<HTMLDivElement>({
     loop: true,
     slides: { perView: 1 },
@@ -40,7 +40,8 @@ const Home = () => {
   // Attach both refs to the same element
   function combinedRef(node: HTMLDivElement | null) {
     sliderRefCallback(node);
-    sliderDomRef.current = node;
+    //sliderDomRef.current = node;
+    (sliderDomRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
   }
 
   // Filter trips for packages and slideshow
@@ -111,7 +112,8 @@ const Home = () => {
                   alt={trip.destination}
                   className="absolute inset-0 w-full h-full object-cover opacity-80"
                 />
-                <div className="relative z-10 text-center px-6 py-12 bg-black bg-opacity-30 rounded-2xl max-w-lg mx-auto">
+                {/*<div className="relative z-10 text-center px-6 py-12 bg-black bg-opacity-30 rounded-2xl max-w-lg mx-auto">*/}
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6 py-12 bg-black bg-opacity-30 rounded-2xl max-w-lg mx-auto m-auto">
                   <h2 className="text-4xl md:text-5xl font-bold mb-2">{trip.destination}</h2>
                   <p className="text-xl mb-4">
                     <span className="font-semibold">{trip.price} MAD</span>
