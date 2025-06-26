@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Navbar from './components/Navbar';
 
 const RequestForm = () => {
   const [form, setForm] = useState({ name: '', cin: '', phone: '', message: '' });
   const [status, setStatus] = useState('');
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus('');
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/requests`, {
