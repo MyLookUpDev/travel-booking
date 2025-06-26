@@ -999,7 +999,7 @@ const AdminPage = () => {
                   onScan={handleScan}
                   style={{ width: '100%' }}
                   constraints={{
-                    facingMode: { exact: "environment" } // 👈 This forces the back camera
+                    video: { facingMode: { exact: "environment" } }
                   }}
                 />
               </div>
