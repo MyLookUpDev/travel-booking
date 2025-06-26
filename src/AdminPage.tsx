@@ -502,7 +502,7 @@ const AdminPage = () => {
   const handleError = (err: any) => {
     setScanStatus('Error accessing camera');
     setScanning(false);
-    console.log(err)
+    alert('Camera error: ' + JSON.stringify(err)); // show error directly
   };
 
   const markAsCheckedIn = async (bookingId: string) => {
