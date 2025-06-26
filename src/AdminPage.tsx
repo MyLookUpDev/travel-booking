@@ -998,7 +998,9 @@ const AdminPage = () => {
                   onError={handleError}
                   onScan={handleScan}
                   style={{ width: '100%' }}
-                  facingMode="environment"
+                  constraints={{
+                    facingMode: { exact: "environment" } // 👈 This forces the back camera
+                  }}
                 />
               </div>
               <button
