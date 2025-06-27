@@ -11,6 +11,7 @@ import ResetPassword from "./pages/ResetPassword"
 import Register from "./pages/Register"
 import RequireAdmin from "./pages/RequireAdmin"
 import RequestForm from "./RequestForm"
+import AdminStats from "./AdminStats"
 
 export default function App() {
   return (
@@ -25,7 +26,8 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         <Route path="/request" element={<RequestForm />} />
-        </Routes>
+        <Route path="/admin-stats" element={<RequireAdmin><AdminStats /></RequireAdmin>} />
+      </Routes>
     </BrowserRouter>
   )
 }

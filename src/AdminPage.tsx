@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar"; // Adjust path if needed
 import * as XLSX from "xlsx";
 import RequireAdmin from "./pages/RequireAdmin";
 import QrScanner from 'react-qr-scanner';
+import { useNavigate } from "react-router-dom";
 
 void RequireAdmin;
 
@@ -82,6 +83,8 @@ const AdminPage = () => {
   const [scanResult, setScanResult] = useState('');
   const [scanStatus, setScanStatus] = useState('');
   const [scanning, setScanning] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchAdmins = async () => {
     setAdminsLoading(true);
@@ -522,6 +525,12 @@ const AdminPage = () => {
     <div className="bg-gray-50 text-gray-900">
       <Navbar />
       <div className="p-6 max-w-6xl mx-auto">
+        <button
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
+          onClick={() => navigate("/admin-stats")}
+        >
+          📊 Statistics
+        </button>
         <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
         <div className="mb-10">
           <h2 className="text-xl font-semibold mb-2">Calendar of Trips</h2>
