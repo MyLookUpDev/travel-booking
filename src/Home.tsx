@@ -99,38 +99,39 @@ const Home = () => {
   }, []);
  
   return (
-    <div className="bg-gray-200 text-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-white text-gray-900">
       <Navbar />
+
       {/* Hero Section with Slideshow */}
-      <section className="h-[55vh] md:h-[70vh] bg-black flex items-center justify-center text-white relative">
-        <div ref={combinedRef} className="keen-slider w-full h-full rounded-2xl overflow-hidden shadow-xl">
+      <section className="h-[55vh] md:h-[70vh] bg-gradient-to-br from-blue-900 via-purple-700 to-blue-500 flex items-center justify-center relative">
+        <div ref={combinedRef} className="keen-slider w-full h-full rounded-3xl overflow-hidden shadow-2xl">
           {filteredTrips.length > 0 ? (
             sortedTrips.slice(0, 8).map((trip) => (
               <div key={trip._id} className="keen-slider__slide flex items-center justify-center h-full relative">
                 <img
                   src={trip.image || '/images/banner.jpg'}
                   alt={trip.destination}
-                  className="absolute inset-0 w-full h-full object-cover opacity-80"
+                  className="absolute inset-0 w-full h-full object-cover opacity-75 blur-[1px] scale-105"
                 />
-                {/*<div className="relative z-10 text-center px-6 py-12 bg-black bg-opacity-30 rounded-2xl max-w-lg mx-auto">*/}
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6 py-12 bg-black bg-opacity-30 rounded-2xl max-w-lg mx-auto m-auto">
-                  <h2 className="text-4xl md:text-5xl font-bold mb-2">{trip.destination}</h2>
-                  <p className="text-xl mb-4">
-                    <span className="font-semibold">{trip.price} MAD</span>
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-8 py-12 bg-gradient-to-br from-black/70 via-blue-900/40 to-transparent rounded-3xl max-w-xl m-auto">
+                  <h2 className="text-4xl md:text-5xl font-extrabold mb-3 bg-gradient-to-tr from-blue-300 via-white to-blue-200 text-transparent bg-clip-text drop-shadow">
+                    {trip.destination}
+                  </h2>
+                  <p className="text-xl mb-5 bg-white/10 p-2 rounded-xl font-medium text-blue-100 drop-shadow flex flex-wrap justify-center gap-2">
+                    <span className="font-semibold text-white">{trip.price} MAD</span>
                     &nbsp;|&nbsp;{new Date(trip.date).toLocaleDateString()} &nbsp;|&nbsp;
-                    <span className="font-semibold">{trip.seats}</span> seats left
-                      {trip.days && trip.days > 1 ? (
-                        <> &nbsp;|&nbsp; <span className="font-semibold">{trip.days} days</span></>
-                      ) : (
-                        <> &nbsp;|&nbsp; <span className="font-semibold">1 day</span></>
-                      ) }
+                    <span className="font-semibold text-blue-200">{trip.seats}</span> seats left
+                    {trip.days && trip.days > 1 ? (
+                      <> &nbsp;|&nbsp; <span className="font-semibold text-purple-200">{trip.days} days</span></>
+                    ) : (
+                      <> &nbsp;|&nbsp; <span className="font-semibold">1 day</span></>
+                    )}
                   </p>
                   <a
-                    //href="/booking"
                     href={`/booking?destination=${encodeURIComponent(trip.destination)}&date=${encodeURIComponent(trip.date)}`}
-                    className="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-bold"
+                    className="inline-block mt-4 bg-gradient-to-tr from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-7 py-3 rounded-2xl font-bold text-lg shadow-lg ring-2 ring-blue-200/30 hover:scale-105 transition"
                   >
-                    Book Now
+                    <span role="img" aria-label="book">✨</span> Book Now
                   </a>
                 </div>
               </div>
@@ -144,11 +145,11 @@ const Home = () => {
       </section>
 
       {/* Filters */}
-      <section className="bg-gray-100 py-1 px-1 flex flex-wrap justify-center gap-6 items-center">
-        <div>
-          <label className="font-semibold mr-2">Gender:</label>
+      <section className="bg-gradient-to-r from-blue-50 via-purple-50 to-white py-5 px-4 flex flex-wrap justify-center gap-8 items-center shadow-inner border-b">
+        <div className="flex items-center gap-2">
+          <label className="font-semibold text-blue-700">Gender:</label>
           <select
-            className="border p-2 rounded"
+            className="border-2 border-blue-200 p-2 rounded-2xl focus:border-blue-500 bg-white"
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
           >
@@ -156,18 +157,19 @@ const Home = () => {
             <option value="female">Women Only</option>
           </select>
         </div>
-        <div>
-          <label className="font-semibold mr-2">Weekend only:</label>
+        <div className="flex items-center gap-2">
+          <label className="font-semibold text-blue-700">Weekend only:</label>
           <input
             type="checkbox"
             checked={weekendOnly}
             onChange={(e) => setWeekendOnly(e.target.checked)}
+            className="accent-blue-600 scale-125"
           />
         </div>
-        <div>
-          <label className="font-semibold mr-2">Sort by:</label>
+        <div className="flex items-center gap-2">
+          <label className="font-semibold text-blue-700">Sort by:</label>
           <select
-            className="border p-2 rounded"
+            className="border-2 border-purple-200 p-2 rounded-2xl focus:border-purple-500 bg-white"
             value={sortOption}
             onChange={e => setSortOption(e.target.value)}
           >
@@ -179,27 +181,34 @@ const Home = () => {
       </section>
 
       {/* Packages Section */}
-      <section id="packages" className="py-16 px-6">
-        <h3 className="text-3xl font-bold text-center mb-12">Our Packages</h3>
-        <div className="grid md:grid-cols-3 gap-8">
+      <section id="packages" className="py-16 px-4 bg-white/80">
+        <h3 className="text-3xl md:text-4xl font-extrabold text-center mb-14 text-blue-800 drop-shadow flex items-center gap-2 justify-center">
+          <span role="img" aria-label="box">📦</span>
+          Our Packages
+        </h3>
+        <div className="grid md:grid-cols-3 gap-10">
           {filteredTrips.length === 0 ? (
-            <div className="col-span-3 text-center text-gray-500">No packages found.</div>
+            <div className="col-span-3 text-center text-gray-400 text-lg">No packages found.</div>
           ) : (
             sortedTrips.map((trip) => (
-              <div key={trip._id} className="border rounded-lg overflow-hidden shadow hover:shadow-lg flex flex-col">
+              <div key={trip._id} className="border-2 border-blue-100 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl flex flex-col bg-gradient-to-tr from-blue-50 via-white to-purple-50 hover:scale-105 transition-all duration-300">
                 <img src={trip.image || '/images/package1.jpg'} alt={trip.destination} className="w-full h-48 object-cover" />
-                <div className="p-4 flex flex-col flex-1">
-                  <h4 className="font-bold text-xl mb-1">{trip.destination}</h4>
-                  <div className="mb-1 text-blue-700 font-bold text-lg">{trip.price} MAD</div>
-                  <div className="text-gray-600 mb-1">Date: {new Date(trip.date).toLocaleDateString()}</div>
-                  <div className="text-gray-600 mb-2">Seats left: {trip.seats}</div>
+                <div className="p-5 flex flex-col flex-1">
+                  <h4 className="font-bold text-xl mb-1 text-blue-800">{trip.destination}</h4>
+                  <div className="mb-1 text-blue-600 font-extrabold text-lg">{trip.price} MAD</div>
+                  <div className="text-gray-700 mb-1">Date: {new Date(trip.date).toLocaleDateString()}</div>
+                  <div className="text-gray-600 mb-1">Seats left: <b>{trip.seats}</b></div>
                   <div className="text-gray-600 mb-2">
-                    {trip.days && trip.days > 1 ? `${trip.days} days` : '1 day'}
+                    {trip.days && trip.days > 1 ? (
+                      <span>{trip.days} days</span>
+                    ) : (
+                      <span>1 day</span>
+                    )}
                   </div>
                   <div className="flex-1"></div>
                   <a
                     href={`/booking?destination=${encodeURIComponent(trip.destination)}&date=${encodeURIComponent(trip.date)}`}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    className="bg-gradient-to-tr from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-2xl font-bold shadow mt-2 text-center transition"
                   >
                     Book
                   </a>
@@ -211,11 +220,12 @@ const Home = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-6 text-center">
-        <p>&copy; 2025 Khouloud Travel. All rights reserved.</p>
+      <footer className="bg-gradient-to-r from-blue-900 to-purple-800 text-white py-8 text-center rounded-t-3xl shadow-xl mt-20">
+        <p className="text-lg">&copy; 2025 Khouloud Voyage. All rights reserved.</p>
       </footer>
     </div>
   );
+
 };
 
 export default Home;

@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import RequireAdmin from "./pages/RequireAdmin";
 import QrScanner from 'react-qr-scanner';
 import { useNavigate } from "react-router-dom";
+import { Divide } from 'lucide-react';
 
 void RequireAdmin;
 
@@ -97,6 +98,7 @@ const AdminPage = () => {
         const data = await res.json();
         console.log("Admins fetched:", data);
         setAdmins(data);
+        setAdminForm({ username: '', email: '', password: '' });
       }
     } finally {
       setAdminsLoading(false);
@@ -505,7 +507,9 @@ const AdminPage = () => {
   const handleError = (err: any) => {
     setScanStatus('Error accessing camera');
     setScanning(false);
-    alert('Camera error: ' + JSON.stringify(err)); // show error directly
+    console.error('Camera error object:', err, err?.name, err?.message, err?.toString?.());
+    alert('Camera error: ' + (err?.message || JSON.stringify(err) || err?.toString?.() || 'Unknown error'));
+    //alert('Camera error: ' + JSON.stringify(err)); // show error directly
   };
 
   const markAsCheckedIn = async (bookingId: string) => {
@@ -522,28 +526,41 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="bg-gray-50 text-gray-900">
+    <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-white min-h-screen text-gray-900">
       <Navbar />
-      <div className="p-6 max-w-6xl mx-auto">
-        <button
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
-          onClick={() => navigate("/admin-stats")}
-        >
-          📊 Statistics
-        </button>
-        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-        <div className="mb-10">
-          <h2 className="text-xl font-semibold mb-2">Calendar of Trips</h2>
-          <FullCalendar plugins={[dayGridPlugin]}
-            initialView="dayGridMonth" 
-            events={calendarEvents} 
-            height={500} 
-            eventClassNames={() => 'trip-event'} 
-            eventContent={renderEventContent} 
+      <div className="max-w-7xl mx-auto p-4 pb-16">
+        {/* Header & Statistics Button */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 pt-8">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight flex items-center gap-4">
+            <span className="inline-flex items-center gap-2 bg-gradient-to-tr from-purple-800 to-blue-400 text-transparent bg-clip-text drop-shadow-lg">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-bar-chart-2 text-purple-700"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Admin Dashboard
+            </span>
+          </h1>
+          <button
+            className="bg-gradient-to-tr from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-2 text-xl font-semibold transition-transform hover:scale-105"
+            onClick={() => navigate("/admin-stats")}
+          >
+            <span role="img" aria-label="chart">📊</span> Statistics
+          </button>
+        </div>
+
+        {/* Calendar of Trips */}
+        <div className="mb-12 bg-white/80 rounded-3xl shadow-xl p-8 border border-slate-200">
+          <h2 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">
+            <span role="img" aria-label="calendar">🗓️</span> Calendar of Trips
+          </h2>
+          <FullCalendar
+            plugins={[dayGridPlugin]}
+            initialView="dayGridMonth"
+            events={calendarEvents}
+            height={500}
+            eventClassNames={() => 'trip-event'}
+            eventContent={renderEventContent}
             eventClick={handleEventClick}
-          /> 
+          />
           {selectedEvent && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setSelectedEvent(null)}>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => setSelectedEvent(null)}>
               <div className="bg-white rounded-lg shadow-lg p-6 min-w-[220px] text-center" onClick={e => e.stopPropagation()}>
                 <h3 className="text-lg font-semibold mb-2">{selectedEvent.title}</h3>
                 <p className="text-sm text-gray-600">{selectedEvent.date}</p>
@@ -556,16 +573,18 @@ const AdminPage = () => {
               </div>
             </div>
           )}
-
         </div>
 
         {/* WhatsApp Number Form */}
-        <div className="mb-6 bg-gray-100 p-4 rounded shadow w-full overflow-x-auto">
-          <form onSubmit={handleWaNumberSave} className="flex items-center gap-4">
-            <label className="font-semibold">WhatsApp Number:</label>
+        <div className="mb-10 bg-gradient-to-tr from-green-100 to-green-50 rounded-3xl shadow-lg p-8 border border-green-200 max-w-2xl mx-auto">
+          <form onSubmit={handleWaNumberSave} className="flex flex-wrap items-center gap-4 justify-center">
+            <label className="font-semibold text-lg flex items-center gap-2">
+              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-phone text-green-700"><path d="M22 16.92V23a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 1 5.18 2 2 0 0 1 3 3h6.09a2 2 0 0 1 2 1.72l.72 5.47a2 2 0 0 1-1 2.18l-2.2 1.11a16.11 16.11 0 0 0 7.29 7.29l1.11-2.2a2 2 0 0 1 2.18-1l5.47.72A2 2 0 0 1 23 16.91V23z\"/></svg>
+              WhatsApp:
+            </label>
             <input
               type="text"
-              className="border p-2 rounded"
+              className="border-2 p-2 rounded-lg shadow"
               value={waNumberInput}
               onChange={e => setWaNumberInput(e.target.value)}
               placeholder="e.g. 212623456789"
@@ -573,51 +592,93 @@ const AdminPage = () => {
             />
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-            >
-              Save
-            </button>
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow font-bold"
+            >💾 Save</button>
             {waSaveStatus && <span className="ml-2 text-sm">{waSaveStatus}</span>}
           </form>
-          <p className="mt-2 text-gray-600 text-sm">
-            Current WhatsApp Number: <b>{waNumber || 'Not Set'}</b>
+          <p className="text-gray-600 text-sm mt-2 text-center">
+            Current WhatsApp: <b>{waNumber || 'Not Set'}</b>
           </p>
         </div>
 
         {/* ===== Add Admin Account (for admins only) ===== */}
-        <div className="mb-6 bg-yellow-100 p-4 rounded shadow">
-          <h2 className="font-semibold mb-2">Create Admin Account</h2>
-          <form onSubmit={handleAdminFormSubmit} className="flex flex-col md:flex-row gap-3">
-            <input name="username" value={adminForm.username} onChange={handleAdminFormChange} className="border p-2 rounded" placeholder="Username" required />
-            <input name="email" value={adminForm.email} onChange={handleAdminFormChange} className="border p-2 rounded" placeholder="Email" type="email" required />
-            <input name="password" value={adminForm.password} onChange={handleAdminFormChange} className="border p-2 rounded" placeholder="Password" type="password" required />
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Create Admin</button>
-            {adminCreateMessage && <span className="text-sm ml-2">{adminCreateMessage}</span>}
+        <div className="mb-10 bg-gradient-to-tr from-yellow-200 to-yellow-50 p-8 rounded-3xl shadow-xl border border-yellow-300 max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-yellow-700 flex items-center gap-2">
+            <span role="img" aria-label="key">🔑</span> Create Admin Account
+          </h2>
+          <form onSubmit={handleAdminFormSubmit} className="flex flex-col md:flex-row gap-4 items-center">
+            <input
+              name="username"
+              value={adminForm.username}
+              onChange={handleAdminFormChange}
+              className="border-2 border-yellow-300 focus:border-yellow-500 p-3 rounded-xl w-full shadow"
+              placeholder="Username"
+              required
+            />
+            <input
+              name="email"
+              value={adminForm.email}
+              onChange={handleAdminFormChange}
+              className="border-2 border-yellow-300 focus:border-yellow-500 p-3 rounded-xl w-full shadow"
+              placeholder="Email"
+              type="email"
+              required
+            />
+            <input
+              name="password"
+              value={adminForm.password}
+              onChange={handleAdminFormChange}
+              className="border-2 border-yellow-300 focus:border-yellow-500 p-3 rounded-xl w-full shadow"
+              placeholder="Password"
+              type="password"
+              required
+            />
+            <button
+              type="submit"
+              className="bg-gradient-to-tr from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-base transition-transform hover:scale-105"
+            >
+              <span role="img" aria-label="add">➕</span> Create Admin
+            </button>
           </form>
+          {adminCreateMessage && (
+            <div className={`mt-3 text-center text-sm font-medium ${
+              adminCreateMessage.startsWith('✅') ? 'text-green-700' : 'text-red-600'
+            }`}>
+              {adminCreateMessage}
+            </div>
+          )}
         </div>
+
         {/* ===== List of All Admins ===== */}
-        <div className="mt-6 bg-yellow-50 p-4 rounded shadow w-full overflow-x-auto">
-          <h2 className="font-semibold mb-2">All Admin Accounts</h2>
+        <div className="mb-10 mt-6 bg-yellow-50 rounded-3xl shadow-xl border border-yellow-200 p-8 max-w-2xl mx-auto overflow-x-auto">
+          <h2 className="text-xl font-bold mb-4 text-yellow-700 flex items-center gap-2">
+            <span role="img" aria-label="group">👥</span> All Admin Accounts
+          </h2>
           {adminsLoading ? (
-            <div>Loading admins...</div>
+            <div className="text-yellow-700 text-center font-medium">Loading admins...</div>
           ) : admins.length === 0 ? (
-            <div>No admins found.</div>
+            <div className="text-yellow-500 text-center">No admins found.</div>
           ) : (
-            <table className="min-w-full border">
+            <table className="min-w-full border rounded-xl overflow-hidden shadow">
               <thead>
                 <tr className="bg-yellow-100">
-                  <th className="border px-2 py-1">Username</th>
-                  <th className="border px-2 py-1">Email</th>
-                  <th className="border px-2 py-1">Actions</th>
+                  <th className="border px-4 py-2 text-left">Username</th>
+                  <th className="border px-4 py-2 text-left">Email</th>
+                  <th className="border px-4 py-2 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {admins.map(a => (
-                  <tr key={a._id}>
-                    <td className="border px-2 py-1">{a.username}</td>
-                    <td className="border px-2 py-1">{a.email}</td>
-                    <td className="border px-2 py-1">
-                      <button onClick={() => handleDeleteAdmin(a._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                  <tr key={a._id} className="hover:bg-yellow-200/60 transition">
+                    <td className="border px-4 py-2">{a.username}</td>
+                    <td className="border px-4 py-2">{a.email}</td>
+                    <td className="border px-4 py-2">
+                      <button
+                        onClick={() => handleDeleteAdmin(a._id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-xl shadow font-semibold transition-transform hover:scale-110"
+                      >
+                        <span role="img" aria-label="delete">🗑️</span> Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -626,38 +687,10 @@ const AdminPage = () => {
           )}
         </div>
 
-        <div className="mt-6 bg-blue-50 p-4 rounded shadow">
-          <form onSubmit={handleTripSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <input type="text" name="destination" placeholder="Destination" value={tripForm.destination} onChange={handleTripChange} className="border p-2 rounded" required />
-            <input type="date" name="date" value={tripForm.date} onChange={handleTripChange} className="border p-2 rounded" required />
-            <input type="days" name="days" placeholder='Days' value={tripForm.days} min={1} onChange={handleTripChange} className="border p-2 rounded" required />
-            <input type="number" name="seats" placeholder="Seats" value={tripForm.seats} onChange={handleTripChange} className="border p-2 rounded" required />
-            <select name="gender" value={tripForm.gender} onChange={handleTripChange} className="border p-2 rounded">
-              <option value="all">All</option>
-              <option value="female">Women Only</option>
-            </select>
-            <input type="number" name="price" placeholder="Price" value={tripForm.price} onChange={handleTripChange} className="border p-2 rounded" required />
-            <input type="text" name="image" placeholder="Image URL" value={tripForm.image} onChange={handleTripChange} className="border p-2 rounded" required />
-            <input type="number" name="profit" placeholder="Profit" value={tripForm.profit} onChange={handleTripChange} className="border p-2 rounded" required={false} />
-            <button type="submit" className="col-span-1 md:col-span-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Trip</button>
-          </form>
-          {tripMessage && <p className="text-sm mt-1 font-medium">{tripMessage}</p>}
-        </div>
 
-        <h2 className="text-xl font-semibold mt-10 mb-2 ">Trips</h2>
-        <div className="flex gap-4 mb-2 w-full overflow-x-auto">
-          <button onClick={handleExportTrips} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Trips to Excel</button>
-          <select value={filterDestination} onChange={(e) => setFilterDestination(e.target.value)} className="border p-2 rounded">
-            <option value="">All Destinations</option>
-            {uniqueDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
-          </select>
-          <select value={filterDate} onChange={(e) => setFilterDate(e.target.value)} className="border p-2 rounded">
-            <option value="">All Dates</option>
-            {uniqueDates.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </div>
-        <div className="rounded shadow w-full overflow-x-auto">
-          <table className="p-4 min-w-full border mb-10 ">
+        {/*Trips Adding Form*/}
+        <div className="mb-10 bg-white rounded-3xl shadow-lg p-8 border border-slate-200 overflow-x-auto">
+          <table className="min-w-full border mb-10 ">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border px-2 py-1">Destination</th>
@@ -672,107 +705,104 @@ const AdminPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredTrips.map((trip) => {
-                console.log('trip id', trip._id, trip.destination);
-                return (
-                  <tr key={trip._id}>
-                    {editingTripId === trip._id ? (
-                      <>
-                        <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                        <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                        <td><input type="days" value={editForm.days} name="days" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                        <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                        <td>
-                          <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
-                            <option value="all">All</option>
-                            <option value="female">Women Only</option>
-                          </select>
-                        </td>
-                        <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                        <td><input type="number" value={editForm.profit} name="profit" onChange={handleEditChange} className="border p-1 w-full" /></td>
-                        <td>
-                          {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
-                        </td>
-                        <td>
-                          <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                          <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
-                          <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="border px-2 py-1">{trip.destination}</td>
-                        <td className="border px-2 py-1">{trip.date}</td>
-                        <td className="border px-2 py-1">{trip.days}</td>
-                        <td className="border px-2 py-1">{trip.seats}</td>
-                        <td className="border px-2 py-1">{trip.gender}</td>
-                        <td className="border px-2 py-1">{trip.price} MAD</td>
-                        <td className="border px-2 py-1">{trip.profit} MAD</td>
-                        <td className="border px-2 py-1">
-                          {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
-                          {imageEditTripId === trip._id ? (
-                            <div className="flex flex-col">
-                              <input
-                                type="text"
-                                value={imageEditUrl}
-                                onChange={(e) => setImageEditUrl(e.target.value)}
-                                placeholder="Image URL"
-                                className="border p-1 rounded mb-1"
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  className="bg-green-600 text-white px-2 py-1 rounded"
-                                  onClick={() => handleImageSave(trip._id)}
-                                  type="button"
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  className="bg-gray-500 text-white px-2 py-1 rounded"
-                                  onClick={() => {
-                                    setImageEditTripId(null);
-                                    setImageEditUrl('');
-                                  }}
-                                  type="button"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
+              {filteredTrips.map((trip) => (
+                <tr key={trip._id}>
+                  {editingTripId === trip._id ? (
+                    <>
+                      <td><input value={editForm.destination} name="destination" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td><input type="date" value={editForm.date} name="date" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td><input type="number" value={editForm.days} name="days" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td><input type="number" value={editForm.seats} name="seats" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td>
+                        <select name="gender" value={editForm.gender} onChange={handleEditChange} className="border p-1 w-full">
+                          <option value="all">All</option>
+                          <option value="female">Women Only</option>
+                        </select>
+                      </td>
+                      <td><input type="number" value={editForm.price} name="price" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td><input type="number" value={editForm.profit} name="profit" onChange={handleEditChange} className="border p-1 w-full" /></td>
+                      <td>
+                        {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
+                      </td>
+                      <td>
+                        <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
+                        <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+                        <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="border px-2 py-1">{trip.destination}</td>
+                      <td className="border px-2 py-1">{trip.date}</td>
+                      <td className="border px-2 py-1">{trip.days}</td>
+                      <td className="border px-2 py-1">{trip.seats}</td>
+                      <td className="border px-2 py-1">{trip.gender}</td>
+                      <td className="border px-2 py-1">{trip.price} MAD</td>
+                      <td className="border px-2 py-1">{trip.profit} MAD</td>
+                      <td className="border px-2 py-1">
+                        {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded mb-1" />}
+                        {imageEditTripId === trip._id ? (
+                          <div className="flex flex-col">
+                            <input
+                              type="text"
+                              value={imageEditUrl}
+                              onChange={(e) => setImageEditUrl(e.target.value)}
+                              placeholder="Image URL"
+                              className="border p-1 rounded mb-1"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                className="bg-green-600 text-white px-2 py-1 rounded"
+                                onClick={() => handleImageSave(trip._id)}
+                                type="button"
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="bg-gray-500 text-white px-2 py-1 rounded"
+                                onClick={() => {
+                                  setImageEditTripId(null);
+                                  setImageEditUrl('');
+                                }}
+                                type="button"
+                              >
+                                Cancel
+                              </button>
                             </div>
-                          ) : (
-                            <button
-                              className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
-                              onClick={() => {
-                                setImageEditTripId(trip._id);
-                                setImageEditUrl(trip.image || '');
-                              }}
-                              type="button"
-                            >
-                              {trip.image ? 'Edit Image' : 'Add Image'}
-                            </button>
-                          )}
-                        </td>
-                        <td className="border px-2 py-1">
+                          </div>
+                        ) : (
                           <button
-                            onClick={() => handleOpenActivitiesModal(trip)}
-                            className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
+                            className="bg-blue-500 text-white px-2 py-1 rounded mr-1"
+                            onClick={() => {
+                              setImageEditTripId(trip._id);
+                              setImageEditUrl(trip.image || '');
+                            }}
                             type="button"
                           >
-                            Activities
+                            {trip.image ? 'Edit Image' : 'Add Image'}
                           </button>
-                          <button
-                            onClick={() => handleEditClick(trip)}
-                            className="bg-yellow-500 text-white px-2 py-1 rounded"
-                            type="button"
-                          >
-                            Edit
-                          </button>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                );
-              })}
+                        )}
+                      </td>
+                      <td className="border px-2 py-1">
+                        <button
+                          onClick={() => handleOpenActivitiesModal(trip)}
+                          className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
+                          type="button"
+                        >
+                          Activities
+                        </button>
+                        <button
+                          onClick={() => handleEditClick(trip)}
+                          className="bg-yellow-500 text-white px-2 py-1 rounded"
+                          type="button"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -865,28 +895,30 @@ const AdminPage = () => {
         )}
 
         {/* BOOKINGS TABLE */}
-        <h2 className="text-xl font-semibold mb-2">Bookings</h2>
-        <div className="flex gap-4 mb-2 w-full overflow-x-auto">
-          <button onClick={handleExportBookings} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Bookings to Excel</button>
-          <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
-            <option value="">All Destinations</option>
-            {uniqueBookingDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
-          </select>
-          <select value={bookingFilterDate} onChange={(e) => setBookingFilterDate(e.target.value)} className="border p-2 rounded">
-            <option value="">All Dates</option>
-            {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select>
-          <input
-            type="text"
-            value={bookingCinSearch}
-            onChange={e => setBookingCinSearch(e.target.value)}
-            placeholder="Search by CIN"
-            className="border p-2 rounded"
-            style={{ minWidth: 120 }}
-          />
-        </div>
-        <div className="flex gap-4 mb-2 w-full overflow-x-auto">
-          <table className="min-w-full border">
+        <div className="mb-10 bg-white rounded-3xl shadow-lg p-8 border border-slate-200 overflow-x-auto">
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2 text-green-700">
+            <span role="img" aria-label="ticket">🎟️</span> Bookings
+          </h2>
+          <div className="flex gap-4 mb-2 w-full overflow-x-auto">
+            <button onClick={handleExportBookings} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Bookings to Excel</button>
+            <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
+              <option value="">All Destinations</option>
+              {uniqueBookingDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
+            </select>
+            <select value={bookingFilterDate} onChange={(e) => setBookingFilterDate(e.target.value)} className="border p-2 rounded">
+              <option value="">All Dates</option>
+              {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
+            <input
+              type="text"
+              value={bookingCinSearch}
+              onChange={e => setBookingCinSearch(e.target.value)}
+              placeholder="Search by CIN"
+              className="border p-2 rounded"
+              style={{ minWidth: 120 }}
+            />
+          </div>
+          <table className="min-w-full border mb-8">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border px-2 py-1">Name</th>
@@ -951,46 +983,49 @@ const AdminPage = () => {
             </tbody>
           </table>
         </div>
-        <h2 className="text-xl font-semibold mb-2 mt-8">User Requests</h2>
-        <button
-          onClick={handleExportRequests}
-          className="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700"
-        >
-          Export to Excel
-        </button>
-        <div className="bg-gray-50 p-4 rounded shadow mb-8 overflow-x-auto">
-          {requests.length === 0 ? (
-            <div>No requests found.</div>
-          ) : (
-            <table className="min-w-full border">
-              <thead>
-                <tr>
-                  <th className="border px-2 py-1">Name</th>
-                  <th className="border px-2 py-1">CIN</th>
-                  <th className="border px-2 py-1">Phone</th>
-                  <th className="border px-2 py-1">Message</th>
-                  <th className="border px-2 py-1">Date</th>
+        {/* User Requests */}
+        <div className="mb-10 bg-yellow-50 rounded-3xl shadow p-8 border border-yellow-200 overflow-x-auto">
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2 text-yellow-700">
+            <span role="img" aria-label="message">📩</span> User Requests
+          </h2>
+          <button
+            onClick={handleExportRequests}
+            className="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 mb-3"
+          >
+            Export to Excel
+          </button>
+          <table className="min-w-full border">
+            <thead>
+              <tr>
+                <th className="border px-2 py-1">Name</th>
+                <th className="border px-2 py-1">CIN</th>
+                <th className="border px-2 py-1">Phone</th>
+                <th className="border px-2 py-1">Message</th>
+                <th className="border px-2 py-1">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map((r) => (
+                <tr key={r._id}>
+                  <td className="border px-2 py-1">{r.name}</td>
+                  <td className="border px-2 py-1">{r.cin}</td>
+                  <td className="border px-2 py-1">{r.phone}</td>
+                  <td className="border px-2 py-1">{r.message}</td>
+                  <td className="border px-2 py-1">{new Date(r.createdAt).toLocaleString()}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {requests.map((r) => (
-                  <tr key={r._id}>
-                    <td className="border px-2 py-1">{r.name}</td>
-                    <td className="border px-2 py-1">{r.cin}</td>
-                    <td className="border px-2 py-1">{r.phone}</td>
-                    <td className="border px-2 py-1">{r.message}</td>
-                    <td className="border px-2 py-1">{new Date(r.createdAt).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div className="mb-8 bg-green-50 rounded shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Scan Ticket Barcode</h2>
+
+        {/* Scan Ticket Section */}
+        <div className="mb-12 bg-green-50 rounded-3xl shadow-lg p-8 border border-green-200 flex flex-col items-center">
+          <h2 className="text-2xl font-bold mb-4 text-green-700 flex items-center gap-2">
+            <span role="img" aria-label="barcode">🎫</span> Scan Ticket Barcode
+          </h2>
           {!scanning ? (
             <button
-              className="bg-green-600 text-white px-4 py-2 rounded"
+              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-semibold text-lg shadow"
               onClick={() => {
                 setScanStatus('');
                 setScanResult('');
@@ -1008,19 +1043,19 @@ const AdminPage = () => {
                   onScan={handleScan}
                   style={{ width: '100%' }}
                   constraints={{
-                    video: { facingMode: { exact: "environment" } }
+                    video: { facingMode: "environment" }
                   }}
                 />
               </div>
               <button
-                className="mt-2 bg-gray-500 text-white px-3 py-1 rounded"
+                className="mt-4 bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-xl"
                 onClick={() => setScanning(false)}
               >
                 Stop
               </button>
             </div>
           )}
-          <div className="mt-3">
+          <div className="mt-4">
             {scanResult && (
               <div className="text-blue-700 font-medium mb-2">Scanned: {scanResult}</div>
             )}

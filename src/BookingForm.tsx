@@ -204,247 +204,227 @@ const BookingForm = () => {
   );
 
   return (
-    <div className="bg-gray-200 text-gray-900"
+    <div
+      className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-white text-gray-900"
       style={
         bgImage
           ? {
-              backgroundImage: `url('${bgImage}')`,
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.85),rgba(255,255,255,0.92)), url('${bgImage}')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
             }
-          : { background: '#e5e7eb' }
+          : undefined
       }
     >
       <Navbar />
-      <div
-        className={`max-w-xl mx-auto p-6 rounded-lg shadow relative`}
-        style={
-          bgImage
-            ? {
-                backgroundImage: `url('${bgImage}')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }
-            : { background: '#f3f4f6' }
-        }
-      >
-        {bgImage && (
-          <div className="absolute inset-0 bg-gray-100 bg-opacity-70 rounded-lg pointer-events-none"></div>
-        )}
-
+      <div className="max-w-2xl mx-auto mt-8 mb-20 p-6 rounded-3xl shadow-2xl bg-white/80 border border-blue-100 relative">
         <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-4">Book Your Trip</h2>
+          <h2 className="text-3xl font-extrabold mb-6 text-blue-800 flex items-center gap-2 drop-shadow">
+            <span role="img" aria-label="ticket">🎫</span>
+            Book Your Trip
+          </h2>
 
           {submitted ? (
-            <div className="text-center space-y-4">
-              <p className="text-green-600 font-semibold">Booking confirmed!</p>
-              {/* Wrap QR code + summary with previewRef */}
+            <div className="text-center space-y-5 animate-fadeIn">
+              <p className="text-green-700 text-xl font-bold flex items-center gap-2 justify-center">
+                <span role="img" aria-label="check">✅</span> Booking Confirmed!
+              </p>
               <div ref={previewRef}>
-                <QRCodeCanvas value={barcodeData} size={150} />
-                {/* Booking Preview */}
-                <div className="text-left text-gray-700 bg-gray-100 p-4 rounded w-64 mx-auto">
-                  <h3 className="font-bold mb-2 text-lg">Booking Summary</h3>
-                  <p><strong>Name:</strong> {formData.name}</p>
-                  <p><strong>Phone:</strong> {formData.phone}</p>
-                  <p><strong>Address:</strong> {formData.address}</p>
-                  <p><strong>CIN:</strong> {formData.cin}</p>
-                  <p><strong>Gender:</strong> {formData.gender}</p>
-                  <p><strong>Age:</strong> {formData.age}</p>
-                  <p><strong>Destination:</strong> {formData.destination}</p>
-                  <p><strong>Date:</strong> {formData.date}</p>
-                  {selectedTrip?.price !== undefined && (
-                    <p><strong>Price:</strong> {selectedTrip.price} MAD</p>
-                  )}
+                <div className="bg-white/90 rounded-2xl p-5 shadow-lg inline-block">
+                  <QRCodeCanvas value={barcodeData} size={160} className="mx-auto mb-2" />
+                  <div className="text-left text-gray-700 p-2 rounded">
+                    <h3 className="font-semibold text-lg mb-2 text-blue-700">Booking Summary</h3>
+                    <ul className="space-y-1 text-base">
+                      <li><b>Name:</b> {formData.name}</li>
+                      <li><b>Phone:</b> {formData.phone}</li>
+                      <li><b>Address:</b> {formData.address}</li>
+                      <li><b>CIN:</b> {formData.cin}</li>
+                      <li><b>Gender:</b> {formData.gender}</li>
+                      <li><b>Age:</b> {formData.age}</li>
+                      <li><b>Destination:</b> {formData.destination}</li>
+                      <li><b>Date:</b> {formData.date}</li>
+                      {selectedTrip?.price !== undefined && (
+                        <li><b>Price:</b> {selectedTrip.price} MAD</li>
+                      )}
+                    </ul>
+                  </div>
                 </div>
               </div>
-              {/* Download PDF Button */}
               <button
-                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="mt-4 bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-3 rounded-2xl font-bold shadow"
                 onClick={handleDownloadPdf}
               >
-                Download PDF
+                <span role="img" aria-label="pdf">⬇️</span> Download PDF
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
               {error && (
-                <div className="text-red-600 text-sm font-medium">{error}</div>
-              )}
-
-              <input
-                type="text"
-                name="name"
-                placeholder="Your name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Your phone number"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-              <input
-                type="text"
-                name="address"
-                placeholder="Your address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-              <input
-                type="text"
-                name="cin"
-                placeholder="National ID (CIN)"
-                value={formData.cin}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              >
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-              <input
-                type="number"
-                name="age"
-                placeholder="Your age"
-                value={formData.age}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-
-              <select
-                name="destination"
-                value={formData.destination}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              >
-                <option value="">Select destination</option>
-                {destinations.map((dest) => (
-                  <option key={dest} value={dest}>
-                    {dest}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-                disabled={!formData.destination}
-              >
-                <option value="">Select date</option>
-                {availableDates.map((trip) => (
-                  <option key={trip._id} value={trip.date}>
-                    {trip.date} ({trip.seats} seats left
-                    {trip.gender === 'female' ? ', women only' : ''})
-                  </option>
-                ))}
-              </select>
-
-              {/* Image and Price Preview */}
-              {selectedTrip && (
-                <div className="flex flex-col md:flex-row items-center justify-center my-2 gap-4 w-full">
-                  {/* Image */}
-                  {selectedTrip.image && (
-                    <img
-                      src={selectedTrip.image}
-                      alt="Trip preview"
-                      className="w-40 h-28 object-cover rounded shadow mb-2 md:mb-0"
-                    />
-                  )}
-                  {/* Price */}
-                  {selectedTrip.price !== undefined && (
-                    <span className="text-lg font-bold text-blue-800 bg-white/70 px-4 py-2 rounded mb-2 md:mb-0">
-                      {selectedTrip.price} MAD
-                    </span>
-                  )}
-                  {/* Activities */}
-                  {selectedTrip.activities && selectedTrip.activities.length > 0 && (
-                    <div className="bg-white/70 rounded shadow p-2 min-w-[180px]">
-                      <span className="font-semibold text-blue-600 text-base block mb-1">Activities:</span>
-                      <ul className="text-sm space-y-1">
-                        {selectedTrip.activities.map((act, idx) => (
-                          <li key={idx} className="flex items-center gap-1">
-                            <span className="font-medium">{act.name}</span>
-                            {act.hour && <span>({act.hour})</span>}
-                            {act.period && <span className="text-gray-500">[{act.period}]</span>}
-                            {act.optional && <span className="text-xs text-yellow-600">(Optional)</span>}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                <div className="text-red-600 text-base font-semibold bg-red-100 rounded-xl px-4 py-2 border border-red-300 shadow">
+                  {error}
                 </div>
               )}
 
-
-              {/* Preview Summary */}
-              <div className="bg-gray-100 p-4 rounded text-sm">
-                <p>
-                  <strong>Name:</strong> {formData.name}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {formData.phone}
-                </p>
-                <p>
-                  <strong>Address:</strong> {formData.address}
-                </p>
-                <p>
-                  <strong>CIN:</strong> {formData.cin}
-                </p>
-                <p>
-                  <strong>Gender:</strong> {formData.gender}
-                </p>
-                <p>
-                  <strong>Age:</strong> {formData.age}
-                </p>
-                <p>
-                  <strong>Destination:</strong> {formData.destination}
-                </p>
-                {selectedTrip?.price !== undefined && (
-                  <p>
-                    <strong>Price:</strong> {selectedTrip.price} MAD
-                  </p>
-                )}
-                <p>
-                  <strong>Date:</strong> {formData.date}
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-blue-200 focus:border-blue-500 p-3 rounded-2xl shadow bg-white/70"
+                />
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="Phone Number"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-blue-200 focus:border-blue-500 p-3 rounded-2xl shadow bg-white/70"
+                />
+                <input
+                  type="text"
+                  name="address"
+                  placeholder="Address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-blue-200 focus:border-blue-500 p-3 rounded-2xl shadow bg-white/70"
+                />
+                <input
+                  type="text"
+                  name="cin"
+                  placeholder="National ID (CIN)"
+                  value={formData.cin}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-blue-200 focus:border-blue-500 p-3 rounded-2xl shadow bg-white/70"
+                />
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-blue-200 focus:border-blue-500 p-3 rounded-2xl shadow bg-white/70"
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+                <input
+                  type="number"
+                  name="age"
+                  placeholder="Age"
+                  value={formData.age}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-blue-200 focus:border-blue-500 p-3 rounded-2xl shadow bg-white/70"
+                />
               </div>
 
-              <div className="flex gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <select
+                  name="destination"
+                  value={formData.destination}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-purple-300 focus:border-purple-500 p-3 rounded-2xl shadow bg-white/70"
+                >
+                  <option value="">Select Destination</option>
+                  {destinations.map((dest) => (
+                    <option key={dest} value={dest}>
+                      {dest}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  required
+                  className="w-full border-2 border-purple-300 focus:border-purple-500 p-3 rounded-2xl shadow bg-white/70"
+                  disabled={!formData.destination}
+                >
+                  <option value="">Select Date</option>
+                  {availableDates.map((trip) => (
+                    <option key={trip._id} value={trip.date}>
+                      {trip.date} ({trip.seats} seats left{trip.gender === 'female' ? ', women only' : ''})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedTrip && (
+                <div className="flex flex-col md:flex-row items-center justify-center gap-6 bg-blue-50/70 rounded-2xl p-5 my-3 shadow-inner">
+                  {selectedTrip.image && (
+                    <img
+                      src={selectedTrip.image}
+                      alt="Trip"
+                      className="w-40 h-28 object-cover rounded-2xl shadow"
+                    />
+                  )}
+                  <div className="flex flex-col gap-1">
+                    {selectedTrip.price !== undefined && (
+                      <span className="text-xl font-bold text-blue-700 bg-white/70 px-4 py-2 rounded-2xl shadow inline-block">
+                        {selectedTrip.price} MAD
+                      </span>
+                    )}
+                    {selectedTrip.activities && selectedTrip.activities.length > 0 && (
+                      <div className="bg-white/90 rounded-xl shadow p-3 mt-2">
+                        <span className="font-semibold text-blue-600 block mb-1">Activities:</span>
+                        <ul className="text-sm space-y-1">
+                          {selectedTrip.activities.map((act, idx) => (
+                            <li key={idx} className="flex items-center gap-1">
+                              <span className="font-medium">{act.name}</span>
+                              {act.hour && <span className="text-gray-600">({act.hour})</span>}
+                              {act.period && <span className="text-gray-400">[{act.period}]</span>}
+                              {act.optional && <span className="text-xs text-yellow-600 ml-1">(Optional)</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Live Summary */}
+              <div className="bg-gradient-to-tr from-blue-50 to-purple-100 p-4 rounded-2xl text-base mb-2 shadow">
+                <div className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                  <span role="img" aria-label="eye">👁️</span> Booking Preview
+                </div>
+                <ul className="space-y-1">
+                  <li><b>Name:</b> {formData.name}</li>
+                  <li><b>Phone:</b> {formData.phone}</li>
+                  <li><b>Address:</b> {formData.address}</li>
+                  <li><b>CIN:</b> {formData.cin}</li>
+                  <li><b>Gender:</b> {formData.gender}</li>
+                  <li><b>Age:</b> {formData.age}</li>
+                  <li><b>Destination:</b> {formData.destination}</li>
+                  {selectedTrip?.price !== undefined && (
+                    <li><b>Price:</b> {selectedTrip.price} MAD</li>
+                  )}
+                  <li><b>Date:</b> {formData.date}</li>
+                </ul>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 mt-3">
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  className="bg-gradient-to-tr from-blue-700 to-purple-600 hover:from-blue-800 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all"
                 >
-                  Submit
+                  <span role="img" aria-label="send">🚀</span> Submit
                 </button>
                 <a
                   href={submitted ? whatsappMessage : `https://wa.me/${waNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  className="bg-gradient-to-tr from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all flex items-center justify-center"
                 >
-                  Help
+                  <span role="img" aria-label="whatsapp">💬</span> Help
                 </a>
               </div>
             </form>
