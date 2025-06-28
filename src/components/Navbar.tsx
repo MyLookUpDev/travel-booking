@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Navbar() {
   const [username, setUsername] = useState<string | null>(null);
@@ -7,6 +8,7 @@ export default function Navbar() {
   const w_path = `https://wa.me/${waNumber}`;
   const [showContactMenu, setShowContactMenu] = useState(false);
   const contactRef = useRef<HTMLDivElement>(null);
+  const {t, i18n } = useTranslation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -44,11 +46,25 @@ export default function Navbar() {
         <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-globe text-blue-700"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/></svg>
         <h1 className="text-2xl font-extrabold text-blue-800 tracking-tight bg-gradient-to-tr from-blue-600 to-purple-500 text-transparent bg-clip-text">Khouloud Voyage</h1>
       </div>
+      <div className="flex items-center gap-3">
+        <select
+          value={i18n.language}
+          onChange={e => { 
+            i18n.changeLanguage(e.target.value);
+            localStorage.setItem("i18nextLng", e.target.value);
+          }}
+          className="px-4 py-2 rounded-2xl font-semibold transition-all bg-white/70 text-blue-800 hover:bg-blue-600 hover:text-white shadow"
+        >
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+        </select>
+      </div>
       {/* Desktop Nav */}
       <nav className="hidden md:flex items-center gap-3">
-        <a href="/" className="px-4 py-2 rounded-2xl font-semibold transition-all bg-white/70 text-blue-800 hover:bg-blue-600 hover:text-white shadow">Home</a>
-        <a href="/booking" className="px-4 py-2 rounded-2xl font-semibold transition-all bg-white/70 text-blue-800 hover:bg-blue-600 hover:text-white shadow">Booking</a>
-        <a href="/request" className="px-4 py-2 rounded-2xl font-semibold transition-all bg-white/70 text-blue-800 hover:bg-blue-600 hover:text-white shadow">Request</a>
+        <a href="/" className="px-4 py-2 rounded-2xl font-semibold transition-all bg-white/70 text-blue-800 hover:bg-blue-600 hover:text-white shadow">{t('Home')}</a>
+        <a href="/booking" className="px-4 py-2 rounded-2xl font-semibold transition-all bg-white/70 text-blue-800 hover:bg-blue-600 hover:text-white shadow">{t('Booking')}</a>
+        <a href="/request" className="px-4 py-2 rounded-2xl font-semibold transition-all bg-white/70 text-blue-800 hover:bg-blue-600 hover:text-white shadow">{t('Request')}</a>
         {/* Contact Dropdown */}
         <div className="relative" ref={contactRef}>
           <button
@@ -57,7 +73,7 @@ export default function Navbar() {
             onClick={() => setShowContactMenu((v) => !v)}
           >
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="feather feather-phone"><path d="M22 16.92V23a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 1 5.18 2 2 0 0 1 3 3h6.09a2 2 0 0 1 2 1.72l.72 5.47a2 2 0 0 1-1 2.18l-2.2 1.11a16.11 16.11 0 0 0 7.29 7.29l1.11-2.2a2 2 0 0 1 2.18-1l5.47.72A2 2 0 0 1 23 16.91V23z"/></svg>
-            Contact
+            {t('Contact')}
           </button>
           {showContactMenu && (
             <div className="absolute right-0 mt-3 w-56 bg-white border border-green-200 rounded-2xl shadow-xl z-20 animate-fadeIn">
@@ -91,7 +107,7 @@ export default function Navbar() {
             </div>
           )}
         </div>
-        <a href="/login" className="px-6 py-2 ml-3 bg-gradient-to-tr from-blue-700 to-purple-600 hover:from-blue-800 hover:to-purple-700 text-white rounded-2xl font-bold shadow transition-all">Login</a>
+        <a href="/login" className="px-6 py-2 ml-3 bg-gradient-to-tr from-blue-700 to-purple-600 hover:from-blue-800 hover:to-purple-700 text-white rounded-2xl font-bold shadow transition-all">{t('Login')}</a>
         {username && (
           <span className="ml-4 font-semibold text-blue-700 bg-blue-100 rounded-2xl px-3 py-1 shadow">
             👤 {username}
@@ -118,9 +134,9 @@ export default function Navbar() {
             className="ml-auto bg-gradient-to-tr from-blue-50 to-purple-100 w-3/4 max-w-xs h-full p-8 flex flex-col gap-5 shadow-2xl rounded-l-3xl animate-slideIn"
             onClick={(e) => e.stopPropagation()}
           >
-            <a href="/" className="px-4 py-3 rounded-2xl font-semibold hover:bg-blue-100 transition" onClick={() => setMenuOpen(false)}>Home</a>
-            <a href="/booking" className="px-4 py-3 rounded-2xl font-semibold hover:bg-blue-100 transition" onClick={() => setMenuOpen(false)}>Booking</a>
-            <a href="/request" className="px-4 py-3 rounded-2xl font-semibold hover:bg-blue-100 transition" onClick={() => setMenuOpen(false)}>Request</a>
+            <a href="/" className="px-4 py-3 rounded-2xl font-semibold hover:bg-blue-100 transition" onClick={() => setMenuOpen(false)}>{t('Home')}</a>
+            <a href="/booking" className="px-4 py-3 rounded-2xl font-semibold hover:bg-blue-100 transition" onClick={() => setMenuOpen(false)}>{t('Booking')}</a>
+            <a href="/request" className="px-4 py-3 rounded-2xl font-semibold hover:bg-blue-100 transition" onClick={() => setMenuOpen(false)}>{t('Request')}</a>
             <a
               href={w_path}
               target="_blank"

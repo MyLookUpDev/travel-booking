@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -7,6 +8,7 @@ export default function Register() {
   const [msgColor, setMsgColor] = useState<"green" | "red">("green");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -42,7 +44,7 @@ export default function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200 via-purple-200 to-indigo-300">
       <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-blue-100">
-        <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">Create Account</h2>
+        <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">{t('Create Account')}</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
             <input
@@ -60,7 +62,7 @@ export default function Register() {
               htmlFor="username"
               className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
             >
-              Username
+              {t('Username')}
             </label>
           </div>
           <div className="relative">
@@ -78,7 +80,7 @@ export default function Register() {
               htmlFor="email"
               className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
             >
-              Email
+              {t('Email')}
             </label>
           </div>
           <div className="relative">
@@ -96,12 +98,12 @@ export default function Register() {
               htmlFor="password"
               className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
             >
-              Password
+              {t('Password')}
             </label>
           </div>
           {message && (
             <div className={`text-center font-medium mb-1 ${msgColor === "green" ? "text-green-600" : "text-red-600"}`}>
-              {message}
+              {t(message)}
             </div>
           )}
           <button
@@ -116,13 +118,13 @@ export default function Register() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
               </span>
-            ) : "Create Account"}
+            ) : t('Create Account')}
           </button>
         </form>
         <div className="mt-6 text-center text-sm">
-          Already have an account?{" "}
+          {t('Already have an account?')} {" "}
           <a href="/login" className="text-indigo-600 hover:underline font-semibold">
-            Log In
+            {t('Log In')}
           </a>
         </div>
       </div>

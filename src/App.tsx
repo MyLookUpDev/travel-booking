@@ -12,6 +12,7 @@ import Register from "./pages/Register"
 import RequireAdmin from "./pages/RequireAdmin"
 import RequestForm from "./RequestForm"
 import AdminStats from "./AdminStats"
+import './i18n'
 
 export default function App() {
   return (

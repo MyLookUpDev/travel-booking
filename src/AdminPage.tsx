@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import RequireAdmin from "./pages/RequireAdmin";
 import QrScanner from 'react-qr-scanner';
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 void RequireAdmin;
 
@@ -85,6 +86,7 @@ const AdminPage = () => {
   const [scanning, setScanning] = useState(false);
 
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const fetchAdmins = async () => {
     setAdminsLoading(true);
@@ -534,21 +536,21 @@ const AdminPage = () => {
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight flex items-center gap-4">
             <span className="inline-flex items-center gap-2 bg-gradient-to-tr from-purple-800 to-blue-400 text-transparent bg-clip-text drop-shadow-lg">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-bar-chart-2 text-purple-700"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              Admin Dashboard
+              {t('Admin Dashboard')}
             </span>
           </h1>
           <button
             className="bg-gradient-to-tr from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-2 text-xl font-semibold transition-transform hover:scale-105"
             onClick={() => navigate("/admin-stats")}
           >
-            <span role="img" aria-label="chart">📊</span> Statistics
+            <span role="img" aria-label="chart">📊</span> {t('Statistics')}
           </button>
         </div>
 
         {/* Calendar of Trips */}
         <div className="mb-12 bg-white/80 rounded-3xl shadow-xl p-8 border border-slate-200">
           <h2 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">
-            <span role="img" aria-label="calendar">🗓️</span> Calendar of Trips
+            <span role="img" aria-label="calendar">🗓️</span> {t('Calendar of Trips')}
           </h2>
           <FullCalendar
             plugins={[dayGridPlugin]}
@@ -568,7 +570,7 @@ const AdminPage = () => {
                   onClick={() => setSelectedEvent(null)}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
                 >
-                  Close
+                  {t('Close')}
                 </button>
               </div>
             </div>
@@ -579,32 +581,32 @@ const AdminPage = () => {
         <div className="mb-10 bg-gradient-to-tr from-green-100 to-green-50 rounded-3xl shadow-lg p-8 border border-green-200 max-w-2xl mx-auto">
           <form onSubmit={handleWaNumberSave} className="flex flex-wrap items-center gap-4 justify-center">
             <label className="font-semibold text-lg flex items-center gap-2">
-              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-phone text-green-700"><path d="M22 16.92V23a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 1 5.18 2 2 0 0 1 3 3h6.09a2 2 0 0 1 2 1.72l.72 5.47a2 2 0 0 1-1 2.18l-2.2 1.11a16.11 16.11 0 0 0 7.29 7.29l1.11-2.2a2 2 0 0 1 2.18-1l5.47.72A2 2 0 0 1 23 16.91V23z\"/></svg>
-              WhatsApp:
+              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-phone text-green-700"><path d="M22 16.92V23a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 1 5.18 2 2 0 0 1 3 3h6.09a2 2 0 0 1 2 1.72l.72 5.47a2 2 0 0 1-1 2.18l-2.2 1.11a16.11 16.11 0 0 0 7.29 7.29l1.11-2.2a2 2 0 0 1 2.18-1l5.47.72A2 2 0 0 1 23 16.91V23z"/></svg>
+              {t('WhatsApp:')}
             </label>
             <input
               type="text"
               className="border-2 p-2 rounded-lg shadow"
               value={waNumberInput}
               onChange={e => setWaNumberInput(e.target.value)}
-              placeholder="e.g. 212623456789"
+              placeholder={t('e.g. 212623456789')}
               required
             />
             <button
               type="submit"
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow font-bold"
-            >💾 Save</button>
+            >💾 {t('Save')}</button>
             {waSaveStatus && <span className="ml-2 text-sm">{waSaveStatus}</span>}
           </form>
           <p className="text-gray-600 text-sm mt-2 text-center">
-            Current WhatsApp: <b>{waNumber || 'Not Set'}</b>
+            {t('Current WhatsApp:')} <b>{waNumber || t('Not Set')}</b>
           </p>
         </div>
 
         {/* ===== Add Admin Account (for admins only) ===== */}
         <div className="mb-10 bg-gradient-to-tr from-yellow-200 to-yellow-50 p-8 rounded-3xl shadow-xl border border-yellow-300 max-w-2xl mx-auto">
           <h2 className="text-xl font-bold mb-4 text-yellow-700 flex items-center gap-2">
-            <span role="img" aria-label="key">🔑</span> Create Admin Account
+            <span role="img" aria-label="key">🔑</span> {t('Create Admin Account')}
           </h2>
           <form onSubmit={handleAdminFormSubmit} className="flex flex-col md:flex-row gap-4 items-center">
             <input
@@ -612,7 +614,7 @@ const AdminPage = () => {
               value={adminForm.username}
               onChange={handleAdminFormChange}
               className="border-2 border-yellow-300 focus:border-yellow-500 p-3 rounded-xl w-full shadow"
-              placeholder="Username"
+              placeholder={t('Username')}
               required
             />
             <input
@@ -620,7 +622,7 @@ const AdminPage = () => {
               value={adminForm.email}
               onChange={handleAdminFormChange}
               className="border-2 border-yellow-300 focus:border-yellow-500 p-3 rounded-xl w-full shadow"
-              placeholder="Email"
+              placeholder={t('Email')}
               type="email"
               required
             />
@@ -629,7 +631,7 @@ const AdminPage = () => {
               value={adminForm.password}
               onChange={handleAdminFormChange}
               className="border-2 border-yellow-300 focus:border-yellow-500 p-3 rounded-xl w-full shadow"
-              placeholder="Password"
+              placeholder={t('Password')}
               type="password"
               required
             />
@@ -637,7 +639,7 @@ const AdminPage = () => {
               type="submit"
               className="bg-gradient-to-tr from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-base transition-transform hover:scale-105"
             >
-              <span role="img" aria-label="add">➕</span> Create Admin
+              <span role="img" aria-label="add">➕</span> {t('Create Admin')}
             </button>
           </form>
           {adminCreateMessage && (
@@ -652,19 +654,19 @@ const AdminPage = () => {
         {/* ===== List of All Admins ===== */}
         <div className="mb-10 mt-6 bg-yellow-50 rounded-3xl shadow-xl border border-yellow-200 p-8 max-w-2xl mx-auto overflow-x-auto">
           <h2 className="text-xl font-bold mb-4 text-yellow-700 flex items-center gap-2">
-            <span role="img" aria-label="group">👥</span> All Admin Accounts
+            <span role="img" aria-label="group">👥</span> {t('All Admin Accounts')}
           </h2>
           {adminsLoading ? (
-            <div className="text-yellow-700 text-center font-medium">Loading admins...</div>
+            <div className="text-yellow-700 text-center font-medium">{t('Loading admins...')}</div>
           ) : admins.length === 0 ? (
-            <div className="text-yellow-500 text-center">No admins found.</div>
+            <div className="text-yellow-500 text-center">{t('No admins found.')}</div>
           ) : (
             <table className="min-w-full border rounded-xl overflow-hidden shadow">
               <thead>
                 <tr className="bg-yellow-100">
-                  <th className="border px-4 py-2 text-left">Username</th>
-                  <th className="border px-4 py-2 text-left">Email</th>
-                  <th className="border px-4 py-2 text-left">Actions</th>
+                  <th className="border px-4 py-2 text-left">{t('Username')}</th>
+                  <th className="border px-4 py-2 text-left">{t('Email')}</th>
+                  <th className="border px-4 py-2 text-left">{t('Actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -677,7 +679,7 @@ const AdminPage = () => {
                         onClick={() => handleDeleteAdmin(a._id)}
                         className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-xl shadow font-semibold transition-transform hover:scale-110"
                       >
-                        <span role="img" aria-label="delete">🗑️</span> Delete
+                        <span role="img" aria-label="delete">🗑️</span> {t('Delete')}
                       </button>
                     </td>
                   </tr>
@@ -693,15 +695,15 @@ const AdminPage = () => {
           <table className="min-w-full border mb-10 ">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border px-2 py-1">Destination</th>
-                <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Days</th>
-                <th className="border px-2 py-1">Seats</th>
-                <th className="border px-2 py-1">Gender</th>
-                <th className="border px-2 py-1">Price</th>
-                <th className="border px-2 py-1">Profit</th>
-                <th className="border px-2 py-1">Image</th>
-                <th className="border px-2 py-1">Actions</th>
+                <th className="border px-2 py-1">{t('Destination')}</th>
+                <th className="border px-2 py-1">{t('Date')}</th>
+                <th className="border px-2 py-1">{t('Days')}</th>
+                <th className="border px-2 py-1">{t('Seats')}</th>
+                <th className="border px-2 py-1">{t('Gender')}</th>
+                <th className="border px-2 py-1">{t('Price')}</th>
+                <th className="border px-2 py-1">{t('Profit')}</th>
+                <th className="border px-2 py-1">{t('Image')}</th>
+                <th className="border px-2 py-1">{t('Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -725,9 +727,9 @@ const AdminPage = () => {
                         {trip.image && <img src={trip.image} alt="Trip" className="w-10 h-10 object-cover rounded" />}
                       </td>
                       <td>
-                        <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                        <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
-                        <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                        <button onClick={() => handleEditSubmit(trip._id!)} className="bg-green-600 text-white px-2 py-1 rounded">{t('Save')}</button>
+                        <button onClick={() => setEditingTripId(null)} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">{t('Cancel')}</button>
+                        <button onClick={() => handleDeleteTrip(trip._id)} className="bg-red-600 text-white px-2 py-1 rounded">{t('Delete')}</button>
                       </td>
                     </>
                   ) : (
@@ -756,7 +758,7 @@ const AdminPage = () => {
                                 onClick={() => handleImageSave(trip._id)}
                                 type="button"
                               >
-                                Save
+                                {t('Save')}
                               </button>
                               <button
                                 className="bg-gray-500 text-white px-2 py-1 rounded"
@@ -766,7 +768,7 @@ const AdminPage = () => {
                                 }}
                                 type="button"
                               >
-                                Cancel
+                                {t('Cancel')}
                               </button>
                             </div>
                           </div>
@@ -779,7 +781,7 @@ const AdminPage = () => {
                             }}
                             type="button"
                           >
-                            {trip.image ? 'Edit Image' : 'Add Image'}
+                            {trip.image ? t('Edit Image') : t('Add Image')}
                           </button>
                         )}
                       </td>
@@ -789,14 +791,14 @@ const AdminPage = () => {
                           className="bg-blue-600 text-white px-2 py-1 rounded mr-1"
                           type="button"
                         >
-                          Activities
+                          {t('Activities')}
                         </button>
                         <button
                           onClick={() => handleEditClick(trip)}
                           className="bg-yellow-500 text-white px-2 py-1 rounded"
                           type="button"
                         >
-                          Edit
+                          {t('Edit')}
                         </button>
                       </td>
                     </>
@@ -811,13 +813,13 @@ const AdminPage = () => {
         {activityModalTripId && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-              <h3 className="text-xl font-semibold mb-4">Edit Activities</h3>
+              <h3 className="text-xl font-semibold mb-4">{t('Edit Activities')}</h3>
               <ul className="space-y-3 mb-3">
                 {modalActivities.map((a, i) => (
                   <li key={i} className="flex gap-2 items-center">
                     <input
                       type="text"
-                      placeholder="Name"
+                      placeholder={t('Name')}
                       value={a.name}
                       onChange={e => {
                         const updated = [...modalActivities];
@@ -840,7 +842,7 @@ const AdminPage = () => {
                     />
                     <input
                       type="text"
-                      placeholder="Period"
+                      placeholder={t('Period')}
                       value={a.period}
                       onChange={e => {
                         const updated = [...modalActivities];
@@ -859,8 +861,8 @@ const AdminPage = () => {
                       }}
                       className="border p-1 rounded"
                     >
-                      <option value="no">Required</option>
-                      <option value="yes">Optional</option>
+                      <option value="no">{t('Required')}</option>
+                      <option value="yes">{t('Optional')}</option>
                     </select>
                     <button
                       type="button"
@@ -884,11 +886,11 @@ const AdminPage = () => {
                   ])
                 }
               >
-                + Add Activity
+                + {t('Add Activity')}
               </button>
               <div className="flex gap-3 justify-end">
-                <button onClick={handleSaveActivities} className="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
-                <button onClick={handleCloseActivitiesModal} className="bg-gray-400 text-white px-4 py-1 rounded">Cancel</button>
+                <button onClick={handleSaveActivities} className="bg-blue-600 text-white px-4 py-1 rounded">{t('Save')}</button>
+                <button onClick={handleCloseActivitiesModal} className="bg-gray-400 text-white px-4 py-1 rounded">{t('Cancel')}</button>
               </div>
             </div>
           </div>
@@ -897,23 +899,23 @@ const AdminPage = () => {
         {/* BOOKINGS TABLE */}
         <div className="mb-10 bg-white rounded-3xl shadow-lg p-8 border border-slate-200 overflow-x-auto">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2 text-green-700">
-            <span role="img" aria-label="ticket">🎟️</span> Bookings
+            <span role="img" aria-label="ticket">🎟️</span> {t('Bookings')}
           </h2>
           <div className="flex gap-4 mb-2 w-full overflow-x-auto">
-            <button onClick={handleExportBookings} className="bg-green-600 text-white px-2 py-1 rounded mb-2">Export Bookings to Excel</button>
+            <button onClick={handleExportBookings} className="bg-green-600 text-white px-2 py-1 rounded mb-2">{t('Export Bookings to Excel')}</button>
             <select value={bookingFilterDestination} onChange={(e) => setBookingFilterDestination(e.target.value)} className="border p-2 rounded">
-              <option value="">All Destinations</option>
+              <option value="">{t('All Destinations')}</option>
               {uniqueBookingDestinations.map((dest) => <option key={dest} value={dest}>{dest}</option>)}
             </select>
             <select value={bookingFilterDate} onChange={(e) => setBookingFilterDate(e.target.value)} className="border p-2 rounded">
-              <option value="">All Dates</option>
+              <option value="">{t('All Dates')}</option>
               {uniqueBookingDates.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
             <input
               type="text"
               value={bookingCinSearch}
               onChange={e => setBookingCinSearch(e.target.value)}
-              placeholder="Search by CIN"
+              placeholder={t('Search by CIN')}
               className="border p-2 rounded"
               style={{ minWidth: 120 }}
             />
@@ -921,18 +923,18 @@ const AdminPage = () => {
           <table className="min-w-full border mb-8">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border px-2 py-1">Name</th>
-                <th className="border px-2 py-1">Phone</th>
-                <th className="border px-2 py-1">Age</th>
-                <th className="border px-2 py-1">Gender</th>
-                <th className="border px-2 py-1">CIN</th>
-                <th className="border px-2 py-1">Destination</th>
-                <th className="border px-2 py-1">Date</th>
-                <th className="border px-2 py-1">Status</th>
-                <th className="border px-2 py-1">Red Flag</th>
-                <th className="border px-2 py-1">Comment</th>
-                <th className="border px-2 py-1">In Bus</th>
-                <th className="border px-2 py-1">Actions</th>
+                <th className="border px-2 py-1">{t('Name')}</th>
+                <th className="border px-2 py-1">{t('Phone')}</th>
+                <th className="border px-2 py-1">{t('Age')}</th>
+                <th className="border px-2 py-1">{t('Gender')}</th>
+                <th className="border px-2 py-1">{t('CIN')}</th>
+                <th className="border px-2 py-1">{t('Destination')}</th>
+                <th className="border px-2 py-1">{t('Date')}</th>
+                <th className="border px-2 py-1">{t('Status')}</th>
+                <th className="border px-2 py-1">{t('Red Flag')}</th>
+                <th className="border px-2 py-1">{t('Comment')}</th>
+                <th className="border px-2 py-1">{t('In Bus')}</th>
+                <th className="border px-2 py-1">{t('Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -970,12 +972,12 @@ const AdminPage = () => {
                   <td className="border px-2 py-1">
                     {editingBookingId === b._id ? (
                       <>
-                        <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                        <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
-                        <button onClick={() => handleDeleteBooking(b._id)} className="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                        <button onClick={() => handleSaveBooking(b._id)} className="bg-green-600 text-white px-2 py-1 rounded">{t('Save')}</button>
+                        <button onClick={handleCancelBookingEdit} className="ml-2 bg-gray-500 text-white px-2 py-1 rounded">{t('Cancel')}</button>
+                        <button onClick={() => handleDeleteBooking(b._id)} className="bg-red-600 text-white px-2 py-1 rounded">{t('Delete')}</button>
                       </>
                     ) : (
-                      <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
+                      <button onClick={() => handleEditBookingClick(b)} className="bg-yellow-500 text-white px-2 py-1 rounded">{t('Edit')}</button>
                     )}
                   </td>
                 </tr>
@@ -986,22 +988,22 @@ const AdminPage = () => {
         {/* User Requests */}
         <div className="mb-10 bg-yellow-50 rounded-3xl shadow p-8 border border-yellow-200 overflow-x-auto">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2 text-yellow-700">
-            <span role="img" aria-label="message">📩</span> User Requests
+            <span role="img" aria-label="message">📩</span> {t('User Requests')}
           </h2>
           <button
             onClick={handleExportRequests}
             className="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 mb-3"
           >
-            Export to Excel
+            {t('Export to Excel')}
           </button>
           <table className="min-w-full border">
             <thead>
               <tr>
-                <th className="border px-2 py-1">Name</th>
-                <th className="border px-2 py-1">CIN</th>
-                <th className="border px-2 py-1">Phone</th>
-                <th className="border px-2 py-1">Message</th>
-                <th className="border px-2 py-1">Date</th>
+                <th className="border px-2 py-1">{t('Name')}</th>
+                <th className="border px-2 py-1">{t('CIN')}</th>
+                <th className="border px-2 py-1">{t('Phone')}</th>
+                <th className="border px-2 py-1">{t('Message')}</th>
+                <th className="border px-2 py-1">{t('Date')}</th>
               </tr>
             </thead>
             <tbody>
@@ -1021,7 +1023,7 @@ const AdminPage = () => {
         {/* Scan Ticket Section */}
         <div className="mb-12 bg-green-50 rounded-3xl shadow-lg p-8 border border-green-200 flex flex-col items-center">
           <h2 className="text-2xl font-bold mb-4 text-green-700 flex items-center gap-2">
-            <span role="img" aria-label="barcode">🎫</span> Scan Ticket Barcode
+            <span role="img" aria-label="barcode">🎫</span> {t('Scan Ticket Barcode')}
           </h2>
           {!scanning ? (
             <button
@@ -1032,7 +1034,7 @@ const AdminPage = () => {
                 setScanning(true);
               }}
             >
-              Start Scanning
+              {t('Start Scanning')}
             </button>
           ) : (
             <div className="flex flex-col items-center">
@@ -1051,13 +1053,13 @@ const AdminPage = () => {
                 className="mt-4 bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-xl"
                 onClick={() => setScanning(false)}
               >
-                Stop
+                {t('Stop')}
               </button>
             </div>
           )}
           <div className="mt-4">
             {scanResult && (
-              <div className="text-blue-700 font-medium mb-2">Scanned: {scanResult}</div>
+              <div className="text-blue-700 font-medium mb-2">{t('Scanned')}: {scanResult}</div>
             )}
             {scanStatus && (
               <div className={scanStatus.startsWith('✅') ? 'text-green-700' : 'text-red-700'}>

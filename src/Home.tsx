@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import 'keen-slider/keen-slider.min.css';
 import { useKeenSlider } from 'keen-slider/react';
 import Navbar from './components/Navbar';
+import { useTranslation } from 'react-i18next';
 
 void React;
 
@@ -17,6 +18,8 @@ type Trip = {
   days?: number;
 };
 
+
+
 const isWeekend = (dateStr: string) => {
   const day = new Date(dateStr).getDay();
   return day === 0 || day === 6; // 0=Sunday, 6=Saturday
@@ -29,6 +32,7 @@ const Home = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // ignore time
   const [sortOption, setSortOption] = useState('');
+  const { t } = useTranslation();
 
   // Slideshow logic
   const sliderDomRef = useRef<HTMLDivElement | null>(null); // <-- create a DOM ref
@@ -118,27 +122,27 @@ const Home = () => {
                     {trip.destination}
                   </h2>
                   <p className="text-xl mb-5 bg-white/10 p-2 rounded-xl font-medium text-blue-100 drop-shadow flex flex-wrap justify-center gap-2">
-                    <span className="font-semibold text-white">{trip.price} MAD</span>
+                    <span className="font-semibold text-white">{trip.price} {t('MAD')}</span>
                     &nbsp;|&nbsp;{new Date(trip.date).toLocaleDateString()} &nbsp;|&nbsp;
-                    <span className="font-semibold text-blue-200">{trip.seats}</span> seats left
+                    <span className="font-semibold text-blue-200">{trip.seats}</span> {t('seats left')}
                     {trip.days && trip.days > 1 ? (
-                      <> &nbsp;|&nbsp; <span className="font-semibold text-purple-200">{trip.days} days</span></>
+                      <> &nbsp;|&nbsp; <span className="font-semibold text-purple-200">{trip.days} {t('days')}</span></>
                     ) : (
-                      <> &nbsp;|&nbsp; <span className="font-semibold">1 day</span></>
+                      <> &nbsp;|&nbsp; <span className="font-semibold">1 {t('day')}</span></>
                     )}
                   </p>
                   <a
                     href={`/booking?destination=${encodeURIComponent(trip.destination)}&date=${encodeURIComponent(trip.date)}`}
                     className="inline-block mt-4 bg-gradient-to-tr from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-7 py-3 rounded-2xl font-bold text-lg shadow-lg ring-2 ring-blue-200/30 hover:scale-105 transition"
                   >
-                    <span role="img" aria-label="book">✨</span> Book Now
+                    <span role="img" aria-label="book">✨</span> {t('Book Now')}
                   </a>
                 </div>
               </div>
             ))
           ) : (
             <div className="flex items-center justify-center h-full w-full">
-              <span className="text-white text-2xl">No trips found</span>
+              <span className="text-white text-2xl">{t('No trips found')}</span>
             </div>
           )}
         </div>
@@ -147,18 +151,18 @@ const Home = () => {
       {/* Filters */}
       <section className="bg-gradient-to-r from-blue-50 via-purple-50 to-white py-5 px-4 flex flex-wrap justify-center gap-8 items-center shadow-inner border-b">
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-blue-700">Gender:</label>
+          <label className="font-semibold text-blue-700">{t('Gender')}:</label>
           <select
             className="border-2 border-blue-200 p-2 rounded-2xl focus:border-blue-500 bg-white"
             value={genderFilter}
             onChange={(e) => setGenderFilter(e.target.value)}
           >
-            <option value="">All</option>
-            <option value="female">Women Only</option>
+            <option value="">{t('All')}</option>
+            <option value="female">{t('Women Only')}</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-blue-700">Weekend only:</label>
+          <label className="font-semibold text-blue-700">{t('Weekend only')}:</label>
           <input
             type="checkbox"
             checked={weekendOnly}
@@ -167,15 +171,15 @@ const Home = () => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="font-semibold text-blue-700">Sort by:</label>
+          <label className="font-semibold text-blue-700">{t('Sort by')}:</label>
           <select
             className="border-2 border-purple-200 p-2 rounded-2xl focus:border-purple-500 bg-white"
             value={sortOption}
             onChange={e => setSortOption(e.target.value)}
           >
-            <option value="">Date (Default)</option>
-            <option value="cheapest">Cheapest</option>
-            <option value="longest">Longest</option>
+            <option value="">{t('Date (Default)')}</option>
+            <option value="cheapest">{t('Cheapest')}</option>
+            <option value="longest">{t('Longest')}</option>
           </select>
         </div>
       </section>
@@ -184,25 +188,25 @@ const Home = () => {
       <section id="packages" className="py-16 px-4 bg-white/80">
         <h3 className="text-3xl md:text-4xl font-extrabold text-center mb-14 text-blue-800 drop-shadow flex items-center gap-2 justify-center">
           <span role="img" aria-label="box">📦</span>
-          Our Packages
+          {t('Our Packages')}
         </h3>
         <div className="grid md:grid-cols-3 gap-10">
           {filteredTrips.length === 0 ? (
-            <div className="col-span-3 text-center text-gray-400 text-lg">No packages found.</div>
+            <div className="col-span-3 text-center text-gray-400 text-lg">{t('No packages found')}.</div>
           ) : (
             sortedTrips.map((trip) => (
               <div key={trip._id} className="border-2 border-blue-100 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl flex flex-col bg-gradient-to-tr from-blue-50 via-white to-purple-50 hover:scale-105 transition-all duration-300">
                 <img src={trip.image || '/images/package1.jpg'} alt={trip.destination} className="w-full h-48 object-cover" />
                 <div className="p-5 flex flex-col flex-1">
                   <h4 className="font-bold text-xl mb-1 text-blue-800">{trip.destination}</h4>
-                  <div className="mb-1 text-blue-600 font-extrabold text-lg">{trip.price} MAD</div>
-                  <div className="text-gray-700 mb-1">Date: {new Date(trip.date).toLocaleDateString()}</div>
-                  <div className="text-gray-600 mb-1">Seats left: <b>{trip.seats}</b></div>
+                  <div className="mb-1 text-blue-600 font-extrabold text-lg">{trip.price} {t('MAD')}</div>
+                  <div className="text-gray-700 mb-1">{t('Date')}: {new Date(trip.date).toLocaleDateString()}</div>
+                  <div className="text-gray-600 mb-1">{t('Seats left')}: <b>{trip.seats}</b></div>
                   <div className="text-gray-600 mb-2">
                     {trip.days && trip.days > 1 ? (
-                      <span>{trip.days} days</span>
+                      <span>{trip.days} {t('days')}</span>
                     ) : (
-                      <span>1 day</span>
+                      <span>1 {t('day')}</span>
                     )}
                   </div>
                   <div className="flex-1"></div>
@@ -210,7 +214,7 @@ const Home = () => {
                     href={`/booking?destination=${encodeURIComponent(trip.destination)}&date=${encodeURIComponent(trip.date)}`}
                     className="bg-gradient-to-tr from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-2xl font-bold shadow mt-2 text-center transition"
                   >
-                    Book
+                    {t('Book')}
                   </a>
                 </div>
               </div>
@@ -221,7 +225,7 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-blue-900 to-purple-800 text-white py-8 text-center rounded-t-3xl shadow-xl mt-20">
-        <p className="text-lg">&copy; 2025 Khouloud Voyage. All rights reserved.</p>
+        <p className="text-lg">&copy; 2025 Khouloud Voyage. {t('All rights reserved')}.</p>
       </footer>
     </div>
   );

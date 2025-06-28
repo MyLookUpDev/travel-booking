@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Navbar from "./components/Navbar"; // Adjust path if needed
+import { useTranslation } from 'react-i18next';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -47,6 +48,7 @@ const BookingForm = () => {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [waNumber, setWaNumber] = useState('');         // Current number (fetched from backend)
   const previewRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   // PDF download handler
   const handleDownloadPdf = async () => {
@@ -163,11 +165,11 @@ const BookingForm = () => {
     const trip = selectedTrip;
     const age = parseInt(formData.age);
 
-    if (!trip) return setError('Invalid trip selection.');
-    if (trip.seats <= 0) return setError('This trip is fully booked.');
+    if (!trip) return setError(t('Invalid trip selection.'));
+    if (trip.seats <= 0) return setError(t('This trip is fully booked.'));
     if (trip.gender === 'female' && formData.gender !== 'female')
-      return setError('This trip is for women only.');
-    if (age < 18) return setError('You must be at least 18 years old.');
+      return setError(t('This trip is for women only.'));
+    if (age < 18) return setError(t('You must be at least 18 years old.'));
 
     const payload = { ...formData, age, tripId: trip._id };
 
@@ -223,13 +225,13 @@ const BookingForm = () => {
         <div className="relative z-10">
           <h2 className="text-3xl font-extrabold mb-6 text-blue-800 flex items-center gap-2 drop-shadow">
             <span role="img" aria-label="ticket">🎫</span>
-            Book Your Trip
+            {t('Book Your Trip')}
           </h2>
 
           {submitted ? (
             <div className="text-center space-y-5 animate-fadeIn">
               <p className="text-green-700 text-xl font-bold flex items-center gap-2 justify-center">
-                <span role="img" aria-label="check">✅</span> Booking Confirmed!
+                <span role="img" aria-label="check">✅</span> {t('Booking Confirmed!')}
               </p>
               <div className="bg-white/90 rounded-2xl p-5 shadow-lg inline-block">
                 <div ref={previewRef} 
@@ -237,18 +239,18 @@ const BookingForm = () => {
                 style={{ width: 320, padding: '32px 24px 24px 24px', margin: '0 auto' }}>
                   <QRCodeCanvas value={barcodeData} size={160} className="mx-auto mb-2" />
                   <div className="text-left text-gray-700 p-2 rounded">
-                    <h3 className="font-semibold text-lg mb-2 text-blue-700">Booking Summary</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-blue-700">{t('Booking Summary')}</h3>
                     <ul className="space-y-1 text-base">
-                      <li><b>Name:</b> {formData.name}</li>
-                      <li><b>Phone:</b> {formData.phone}</li>
-                      <li><b>Address:</b> {formData.address}</li>
-                      <li><b>CIN:</b> {formData.cin}</li>
-                      <li><b>Gender:</b> {formData.gender}</li>
-                      <li><b>Age:</b> {formData.age}</li>
-                      <li><b>Destination:</b> {formData.destination}</li>
-                      <li><b>Date:</b> {formData.date}</li>
+                      <li><b>{t('Name')}:</b> {formData.name}</li>
+                      <li><b>{t('Phone')}:</b> {formData.phone}</li>
+                      <li><b>{t('Address')}:</b> {formData.address}</li>
+                      <li><b>{t('CIN')}:</b> {formData.cin}</li>
+                      <li><b>{t('Gender')}:</b> {formData.gender}</li>
+                      <li><b>{t('Age')}:</b> {formData.age}</li>
+                      <li><b>{t('Destination')}:</b> {formData.destination}</li>
+                      <li><b>{t('Date')}:</b> {formData.date}</li>
                       {selectedTrip?.price !== undefined && (
-                        <li><b>Price:</b> {selectedTrip.price} MAD</li>
+                        <li><b>{t('Price')}:</b> {selectedTrip.price} MAD</li>
                       )}
                     </ul>
                   </div>
@@ -257,7 +259,7 @@ const BookingForm = () => {
                   className="mt-4 bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-3 rounded-2xl font-bold shadow"
                   onClick={handleDownloadPdf}
                 >
-                  <span role="img" aria-label="pdf">⬇️</span> Download PDF
+                  <span role="img" aria-label="pdf">⬇️</span> {t('Download PDF')}
                 </button>
               </div>
             </div>
@@ -273,7 +275,7 @@ const BookingForm = () => {
                 <input
                   type="text"
                   name="name"
-                  placeholder="Full Name"
+                  placeholder={t('Full Name')}
                   value={formData.name}
                   onChange={handleChange}
                   required
@@ -282,7 +284,7 @@ const BookingForm = () => {
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="Phone Number"
+                  placeholder={t('Phone Number')}
                   value={formData.phone}
                   onChange={handleChange}
                   required
@@ -291,7 +293,7 @@ const BookingForm = () => {
                 <input
                   type="text"
                   name="address"
-                  placeholder="Address"
+                  placeholder={t('Address')}
                   value={formData.address}
                   onChange={handleChange}
                   required
@@ -300,7 +302,7 @@ const BookingForm = () => {
                 <input
                   type="text"
                   name="cin"
-                  placeholder="National ID (CIN)"
+                  placeholder={t('National ID (CIN)')}
                   value={formData.cin}
                   onChange={handleChange}
                   required
@@ -313,13 +315,13 @@ const BookingForm = () => {
                   required
                   className="w-full border-2 border-blue-200 focus:border-blue-500 p-3 rounded-2xl shadow bg-white/70"
                 >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="male">{t('Male')}</option>
+                  <option value="female">{t('Female')}</option>
                 </select>
                 <input
                   type="number"
                   name="age"
-                  placeholder="Age"
+                  placeholder={t('Age')}
                   value={formData.age}
                   onChange={handleChange}
                   required
@@ -335,7 +337,7 @@ const BookingForm = () => {
                   required
                   className="w-full border-2 border-purple-300 focus:border-purple-500 p-3 rounded-2xl shadow bg-white/70"
                 >
-                  <option value="">Select Destination</option>
+                  <option value="">{t('Select Destination')}</option>
                   {destinations.map((dest) => (
                     <option key={dest} value={dest}>
                       {dest}
@@ -351,10 +353,10 @@ const BookingForm = () => {
                   className="w-full border-2 border-purple-300 focus:border-purple-500 p-3 rounded-2xl shadow bg-white/70"
                   disabled={!formData.destination}
                 >
-                  <option value="">Select Date</option>
+                  <option value="">{t('Select Date')}</option>
                   {availableDates.map((trip) => (
                     <option key={trip._id} value={trip.date}>
-                      {trip.date} ({trip.seats} seats left{trip.gender === 'female' ? ', women only' : ''})
+                      {trip.date} ({trip.seats} {t('seats left')}{trip.gender === 'female' ? `, ${t('women only')}` : ''})
                     </option>
                   ))}
                 </select>
@@ -365,7 +367,7 @@ const BookingForm = () => {
                   {selectedTrip.image && (
                     <img
                       src={selectedTrip.image}
-                      alt="Trip"
+                      alt={t('Trip')}
                       className="w-40 h-28 object-cover rounded-2xl shadow"
                     />
                   )}
@@ -377,14 +379,14 @@ const BookingForm = () => {
                     )}
                     {selectedTrip.activities && selectedTrip.activities.length > 0 && (
                       <div className="bg-white/90 rounded-xl shadow p-3 mt-2">
-                        <span className="font-semibold text-blue-600 block mb-1">Activities:</span>
+                        <span className="font-semibold text-blue-600 block mb-1">{t('Activities')}:</span>
                         <ul className="text-sm space-y-1">
                           {selectedTrip.activities.map((act, idx) => (
                             <li key={idx} className="flex items-center gap-1">
-                              <span className="font-medium">{act.name}</span>
+                              <span className="font-medium">{t(act.name)}</span>
                               {act.hour && <span className="text-gray-600">({act.hour})</span>}
                               {act.period && <span className="text-gray-400">[{act.period}]</span>}
-                              {act.optional && <span className="text-xs text-yellow-600 ml-1">(Optional)</span>}
+                              {act.optional && <span className="text-xs text-yellow-600 ml-1">({t('Optional')})</span>}
                             </li>
                           ))}
                         </ul>
@@ -397,20 +399,20 @@ const BookingForm = () => {
               {/* Live Summary */}
               <div className="bg-gradient-to-tr from-blue-50 to-purple-100 p-4 rounded-2xl text-base mb-2 shadow">
                 <div className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-                  <span role="img" aria-label="eye">👁️</span> Booking Preview
+                  <span role="img" aria-label="eye">👁️</span> {t('Booking Preview')}
                 </div>
                 <ul className="space-y-1">
-                  <li><b>Name:</b> {formData.name}</li>
-                  <li><b>Phone:</b> {formData.phone}</li>
-                  <li><b>Address:</b> {formData.address}</li>
-                  <li><b>CIN:</b> {formData.cin}</li>
-                  <li><b>Gender:</b> {formData.gender}</li>
-                  <li><b>Age:</b> {formData.age}</li>
-                  <li><b>Destination:</b> {formData.destination}</li>
+                  <li><b>{t('Name')}:</b> {formData.name}</li>
+                  <li><b>{t('Phone')}:</b> {formData.phone}</li>
+                  <li><b>{t('Address')}:</b> {formData.address}</li>
+                  <li><b>{t('CIN')}:</b> {formData.cin}</li>
+                  <li><b>{t('Gender')}:</b> {formData.gender}</li>
+                  <li><b>{t('Age')}:</b> {formData.age}</li>
+                  <li><b>{t('Destination')}:</b> {formData.destination}</li>
                   {selectedTrip?.price !== undefined && (
-                    <li><b>Price:</b> {selectedTrip.price} MAD</li>
+                    <li><b>{t('Price')}:</b> {selectedTrip.price} MAD</li>
                   )}
-                  <li><b>Date:</b> {formData.date}</li>
+                  <li><b>{t('Date')}:</b> {formData.date}</li>
                 </ul>
               </div>
 
@@ -419,7 +421,7 @@ const BookingForm = () => {
                   type="submit"
                   className="bg-gradient-to-tr from-blue-700 to-purple-600 hover:from-blue-800 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all"
                 >
-                  <span role="img" aria-label="send">🚀</span> Submit
+                  <span role="img" aria-label="send">🚀</span> {t('Submit')}
                 </button>
                 <a
                   href={submitted ? whatsappMessage : `https://wa.me/${waNumber}`}
@@ -427,7 +429,7 @@ const BookingForm = () => {
                   rel="noopener noreferrer"
                   className="bg-gradient-to-tr from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all flex items-center justify-center"
                 >
-                  <span role="img" aria-label="whatsapp">💬</span> Help
+                  <span role="img" aria-label="whatsapp">💬</span> {t('Help')}
                 </a>
               </div>
             </form>
