@@ -52,7 +52,8 @@ const BookingForm = () => {
   const handleDownloadPdf = async () => {
     if (!previewRef.current) return;
     const canvas = await html2canvas(previewRef.current, {
-      backgroundColor: "#fff"
+      backgroundColor: "#fff",
+      scale: 3
     });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({
@@ -230,8 +231,10 @@ const BookingForm = () => {
               <p className="text-green-700 text-xl font-bold flex items-center gap-2 justify-center">
                 <span role="img" aria-label="check">✅</span> Booking Confirmed!
               </p>
-              <div ref={previewRef}>
-                <div className="bg-white/90 rounded-2xl p-5 shadow-lg inline-block">
+              <div className="bg-white/90 rounded-2xl p-5 shadow-lg inline-block">
+                <div ref={previewRef} 
+                className="bg-white rounded-2xl shadow-lg inline-block"
+                style={{ width: 320, padding: '32px 24px 24px 24px', margin: '0 auto' }}>
                   <QRCodeCanvas value={barcodeData} size={160} className="mx-auto mb-2" />
                   <div className="text-left text-gray-700 p-2 rounded">
                     <h3 className="font-semibold text-lg mb-2 text-blue-700">Booking Summary</h3>
@@ -250,13 +253,13 @@ const BookingForm = () => {
                     </ul>
                   </div>
                 </div>
+                <button
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-3 rounded-2xl font-bold shadow"
+                  onClick={handleDownloadPdf}
+                >
+                  <span role="img" aria-label="pdf">⬇️</span> Download PDF
+                </button>
               </div>
-              <button
-                className="mt-4 bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-3 rounded-2xl font-bold shadow"
-                onClick={handleDownloadPdf}
-              >
-                <span role="img" aria-label="pdf">⬇️</span> Download PDF
-              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
