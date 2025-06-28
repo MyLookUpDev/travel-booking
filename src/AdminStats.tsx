@@ -16,6 +16,7 @@ import {
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
 void RequireAdmin;
+void React;
 
 const COLORS = ["#ef4444", "#3b82f6", "#10b981", "#fbbf24", "#8b5cf6", "#eab308"];
 

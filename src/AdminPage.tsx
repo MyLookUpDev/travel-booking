@@ -7,7 +7,6 @@ import * as XLSX from "xlsx";
 import RequireAdmin from "./pages/RequireAdmin";
 import QrScanner from 'react-qr-scanner';
 import { useNavigate } from "react-router-dom";
-import { Divide } from 'lucide-react';
 
 void RequireAdmin;
 
@@ -60,10 +59,10 @@ const AdminPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '', days: '1'  });
-  const [tripMessage, setTripMessage] = useState('');
-  const [filterDestination, setFilterDestination] = useState('');
-  const [filterDate, setFilterDate] = useState('');
+  //const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '', days: '1'  });
+  //const [setTripMessage] = useState('');
+  const [filterDestination] = useState('');
+  const [filterDate] = useState('');
   const [bookingFilterDestination, setBookingFilterDestination] = useState('');
   const [bookingFilterDate, setBookingFilterDate] = useState('');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
@@ -254,10 +253,11 @@ const AdminPage = () => {
       }
     } catch (err) {
       alert('Server error');
+      console.log(err)
     }
   };
 
-  const handleTripChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  /*const handleTripChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setTripForm({ ...tripForm, [e.target.name]: e.target.value });
   };
 
@@ -289,7 +289,7 @@ const AdminPage = () => {
       console.error(err);
       setTripMessage('❌ Server error');
     }
-  };
+  };*/
 
   const handleEditClick = (trip: Trip) => {
     setEditingTripId(trip._id);
@@ -421,8 +421,8 @@ const AdminPage = () => {
       .catch(() => setRequests([]));
   }, []);
 
-  const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
-  const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
+  //const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
+  //const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
   const uniqueBookingDestinations = Array.from(new Set(bookings.map((b) => b.destination)));
   const uniqueBookingDates = Array.from(new Set(bookings.map((b) => b.date)));
 
@@ -447,13 +447,13 @@ const AdminPage = () => {
     return 'bg-blue-200';
   };
 
-  // For trips
+  /*// For trips
   const handleExportTrips = () => {
     const ws = XLSX.utils.json_to_sheet(trips);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Trips");
     XLSX.writeFile(wb, "trips.xlsx");
-  };
+  };*/
 
   // For bookings
   const handleExportBookings = () => {
