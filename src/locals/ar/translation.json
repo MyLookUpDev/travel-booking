@@ -110,5 +110,11 @@
   "Failed to send request": "فشل في إرسال الطلب",
   "Forgot Password?": "هل نسيت كلمة المرور؟",
   "Your email": "بريدك الإلكتروني",
-  "Send reset link": "إرسال رابط إعادة التعيين"
+  "Send reset link": "إرسال رابط إعادة التعيين",
+  "Welcome Back": "مرحبًا بعودتك",
+  "Email or Username": "البريد الإلكتروني أو اسم المستخدم",
+  "Create an account": "إنشاء حساب",
+  "Log In": "تسجيل الدخول",
+  "Forgot password": "نسيت كلمة المرور",
+  "Already have an account": "لديك حساب بالفعل؟"
 }

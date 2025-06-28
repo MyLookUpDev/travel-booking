@@ -111,5 +111,11 @@
   "Forgot Password?": "Mot de passe oublié?",
   "Reset Password": "Réinitialiser le mot de passe",
   "Your email": "Votre e-mail",
-  "Send reset link": "Envoyer le lien de réinitialisation"
+  "Send reset link": "Envoyer le lien de réinitialisation",
+  "Welcome Back": "Bon retour",
+  "Email or Username": "E-mail ou nom d’utilisateur",
+  "Create an account": "Créer un compte",
+  "Log In": "Se connecter",
+  "Forgot password": "Mot de passe oublié",
+  "Already have an account": "Vous avez déjà un compte ?"
 }
