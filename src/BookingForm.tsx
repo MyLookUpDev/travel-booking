@@ -206,6 +206,33 @@ const BookingForm = () => {
     (selectedTrip?.price ? `Price: ${selectedTrip.price} MAD\n` : "")
   );
 
+  useEffect(() => {
+    // Only prefill if there's a token
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    // Fetch profile info if user is logged in
+    fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setFormData(fd => ({
+            ...fd,
+            // Only prefill fields if they're empty (can always be edited)
+            name: fd.name || data.username || "",
+            phone: fd.phone || data.phone || "",
+            address: fd.address || data.address || "",
+            cin: fd.cin || data.cin || "",
+            gender: fd.gender || data.gender || "male",
+            age: fd.age || data.age?.toString() || ""
+          }));
+        }
+      });
+  }, []);
+
+
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-white text-gray-900"

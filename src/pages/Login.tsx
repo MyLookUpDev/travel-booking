@@ -30,7 +30,9 @@ const Login: React.FC = () => {
         const payload = JSON.parse(atob(data.token.split('.')[1]));
         if (payload.role === "admin") {
           navigate("/admin");
-        } else {
+        }else if (payload.role === "user") {
+          navigate("/client");
+        }else {
           navigate("/");
         }
       } else {

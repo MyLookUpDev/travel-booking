@@ -13,14 +13,16 @@ const router = Router();
 // Register
 router.post("/", async (req, res) => {
   try {
-    const { username, email, password } = req.body
+    //const { username, email, password } = req.body
+    const { username, email, password, cin, address, phone, gender, age } = req.body
     if (!username || !email || !password)
         return res.status(400).json({ message: "All fields required" })
     const exists = await User.findOne({ $or: [{ username }, { email }] })
     if (exists) return res.status(400).json({ message: "User exists" })
 
     const hashedPassword = await bcrypt.hash(password, 10)
-    await User.create({ username, email, password: hashedPassword })
+    //await User.create({ username, email, password: hashedPassword })
+    await User.create({ username, email, password: hashedPassword, cin, address, phone, gender, age })
     res.status(201).json({ message: "User created" })
   } catch (err) {
     res.status(500).json({ message: "Server error" })

@@ -3,14 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 
 export default function Register() {
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
+  //const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    username: "",   // (use for "Name")
+    email: "",
+    password: "",
+    cin: "",
+    address: "",
+    phone: "",
+    gender: "",
+    age: ""
+  });
   const [message, setMessage] = useState("");
   const [msgColor, setMsgColor] = useState<"green" | "red">("green");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -99,6 +109,103 @@ export default function Register() {
               className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
             >
               {t('Password')}
+            </label>
+          </div>
+          <div className="relative">
+            <input
+              name="cin"
+              id="cin"
+              type="text"
+              value={form.cin}
+              onChange={handleChange}
+              required
+              className="w-full peer border-b-2 border-indigo-200 bg-transparent p-3 pt-6 text-gray-900 rounded-t-md focus:outline-none focus:border-indigo-500"
+              placeholder=" "
+            />
+            <label
+              htmlFor="cin"
+              className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
+            >
+              {t('CIN')}
+            </label>
+          </div>
+
+          <div className="relative">
+            <input
+              name="address"
+              id="address"
+              type="text"
+              value={form.address}
+              onChange={handleChange}
+              required
+              className="w-full peer border-b-2 border-indigo-200 bg-transparent p-3 pt-6 text-gray-900 rounded-t-md focus:outline-none focus:border-indigo-500"
+              placeholder=" "
+            />
+            <label
+              htmlFor="address"
+              className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
+            >
+              {t('Address')}
+            </label>
+          </div>
+
+          <div className="relative">
+            <input
+              name="phone"
+              id="phone"
+              type="text"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              className="w-full peer border-b-2 border-indigo-200 bg-transparent p-3 pt-6 text-gray-900 rounded-t-md focus:outline-none focus:border-indigo-500"
+              placeholder=" "
+            />
+            <label
+              htmlFor="phone"
+              className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
+            >
+              {t('Phone')}
+            </label>
+          </div>
+
+          <div className="relative">
+            <select
+              name="gender"
+              id="gender"
+              value={form.gender}
+              onChange={handleChange}
+              required
+              className="w-full peer border-b-2 border-indigo-200 bg-transparent p-3 pt-6 text-gray-900 rounded-t-md focus:outline-none focus:border-indigo-500"
+            >
+              <option value="" disabled>{t('Gender')}</option>
+              <option value="male">{t('Male')}</option>
+              <option value="female">{t('Female')}</option>
+            </select>
+            <label
+              htmlFor="gender"
+              className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
+            >
+              {t('Gender')}
+            </label>
+          </div>
+
+          <div className="relative">
+            <input
+              name="age"
+              id="age"
+              type="number"
+              value={form.age}
+              onChange={handleChange}
+              required
+              min={1}
+              className="w-full peer border-b-2 border-indigo-200 bg-transparent p-3 pt-6 text-gray-900 rounded-t-md focus:outline-none focus:border-indigo-500"
+              placeholder=" "
+            />
+            <label
+              htmlFor="age"
+              className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm"
+            >
+              {t('Age')}
             </label>
           </div>
           {message && (

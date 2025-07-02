@@ -3,6 +3,7 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import bookingRoutes from './routes/bookingRoutes'
+import profileRoutes from "./routes/profile"
 
 dotenv.config()
 
@@ -13,6 +14,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api/bookings', bookingRoutes)
+app.use("/api/profile", profileRoutes)
 
 mongoose
   .connect(process.env.MONGO_URI || '', { dbName: 'travel-booking' })

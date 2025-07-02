@@ -13,6 +13,8 @@ import RequireAdmin from "./pages/RequireAdmin"
 import RequestForm from "./RequestForm"
 import AdminStats from "./AdminStats"
 import './i18n'
+import RequireClient from "./pages/RequireClient"
+import ClientBookingsPage from "./ClientBookingsPage"
 
 export default function App() {
   return (
@@ -28,6 +30,7 @@ export default function App() {
         <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         <Route path="/request" element={<RequestForm />} />
         <Route path="/admin-stats" element={<RequireAdmin><AdminStats /></RequireAdmin>} />
+        <Route path="/client" element={<RequireClient><ClientBookingsPage /></RequireClient>} />
       </Routes>
     </BrowserRouter>
   )
