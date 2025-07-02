@@ -103,12 +103,12 @@ const BookingForm = () => {
     }));
     // eslint-disable-next-line
   }, []);
-  */
 
   // Save form to localStorage
   useEffect(() => {
     localStorage.setItem('bookingForm', JSON.stringify(formData));
   }, [formData]);
+  */
 
   // Update available dates and background image when destination changes or trips update
   useEffect(() => {
