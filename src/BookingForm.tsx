@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useLocation } from 'react-router-dom';
+//import { useLocation } from 'react-router-dom';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Navbar from "./components/Navbar"; // Adjust path if needed
 import { useTranslation } from 'react-i18next';
 
-function useQuery() {
+/*function useQuery() {
   return new URLSearchParams(useLocation().search);
-}
+}*/
 
 type Activity = {
   name: string;
@@ -68,7 +68,7 @@ const BookingForm = () => {
   };
 
   // Get query parameters
-  const query = useQuery();
+  //const query = useQuery();
 
   // On mount: fetch all trips and handle URL prefill
   useEffect(() => {
@@ -88,6 +88,7 @@ const BookingForm = () => {
         .catch(() => setWaNumber(''));
     }, []);
 
+    /*
   // On mount: prefill from localStorage, then from URL if available
   useEffect(() => {
     const saved = localStorage.getItem('bookingForm');
@@ -102,6 +103,7 @@ const BookingForm = () => {
     }));
     // eslint-disable-next-line
   }, []);
+  */
 
   // Save form to localStorage
   useEffect(() => {
