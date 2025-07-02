@@ -62,10 +62,8 @@ const AdminPage = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   //const [tripForm, setTripForm] = useState({ destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '', days: '1'  });
   //const [setTripMessage] = useState('');
-  //const [filterDestination] = useState('');
-  //const [filterDate] = useState('');
-  const [filterDestination, setFilterDestination] = useState('');
-  const [filterDate, setFilterDate] = useState('');
+  const [filterDestination] = useState('');
+  const [filterDate] = useState('');
   const [bookingFilterDestination, setBookingFilterDestination] = useState('');
   const [bookingFilterDate, setBookingFilterDate] = useState('');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
@@ -86,11 +84,6 @@ const AdminPage = () => {
   const [scanResult, setScanResult] = useState('');
   const [scanStatus, setScanStatus] = useState('');
   const [scanning, setScanning] = useState(false);
-
-  const [tripForm, setTripForm] = useState({
-    destination: '', date: '', seats: '', gender: 'all', price: '', profit: '', image: '', days: '1'
-  });
-  const [tripMessage, setTripMessage] = useState('');
 
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -266,7 +259,7 @@ const AdminPage = () => {
     }
   };
 
-  const handleTripChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  /*const handleTripChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setTripForm({ ...tripForm, [e.target.name]: e.target.value });
   };
 
@@ -298,7 +291,7 @@ const AdminPage = () => {
       console.error(err);
       setTripMessage('❌ Server error');
     }
-  };
+  };*/
 
   const handleEditClick = (trip: Trip) => {
     setEditingTripId(trip._id);
@@ -430,8 +423,8 @@ const AdminPage = () => {
       .catch(() => setRequests([]));
   }, []);
 
-  const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
-  const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
+  //const uniqueDestinations = Array.from(new Set(trips.map((t) => t.destination)));
+  //const uniqueDates = Array.from(new Set(trips.map((t) => t.date)));
   const uniqueBookingDestinations = Array.from(new Set(bookings.map((b) => b.destination)));
   const uniqueBookingDates = Array.from(new Set(bookings.map((b) => b.date)));
 
@@ -456,13 +449,13 @@ const AdminPage = () => {
     return 'bg-blue-200';
   };
 
-  // For trips
+  /*// For trips
   const handleExportTrips = () => {
     const ws = XLSX.utils.json_to_sheet(trips);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Trips");
     XLSX.writeFile(wb, "trips.xlsx");
-  };
+  };*/
 
   // For bookings
   const handleExportBookings = () => {
@@ -695,131 +688,10 @@ const AdminPage = () => {
             </table>
           )}
         </div>
-        
-        <div className="mb-10 bg-gradient-to-tr from-blue-100 to-blue-50 p-8 rounded-3xl shadow-lg border border-blue-200">
-          <form
-            onSubmit={handleTripSubmit}
-            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
-          >
-            <input
-              type="text"
-              name="destination"
-              placeholder={t('Destination')}
-              value={tripForm.destination}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-              required
-            />
-            <input
-              type="date"
-              name="date"
-              value={tripForm.date}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-              required
-            />
-            <input
-              type="number"
-              name="days"
-              placeholder={t('Days')}
-              value={tripForm.days}
-              min={1}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-              required
-            />
-            <input
-              type="number"
-              name="seats"
-              placeholder={t('Seats')}
-              value={tripForm.seats}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-              required
-            />
-            <select
-              name="gender"
-              value={tripForm.gender}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-            >
-              <option value="all">{t('All')}</option>
-              <option value="female">{t('Women Only')}</option>
-            </select>
-            <input
-              type="number"
-              name="price"
-              placeholder={t('Price')}
-              value={tripForm.price}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-              required
-            />
-            <input
-              type="number"
-              name="profit"
-              placeholder={t('Profit')}
-              value={tripForm.profit}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-            />
-            <input
-              type="text"
-              name="image"
-              placeholder={t('Image URL')}
-              value={tripForm.image}
-              onChange={handleTripChange}
-              className="border-2 border-blue-200 focus:border-blue-500 p-3 rounded-xl shadow w-full"
-            />
-            <button
-              type="submit"
-              className="col-span-1 md:col-span-4 bg-gradient-to-tr from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-base transition-transform hover:scale-105"
-            >
-              <span role="img" aria-label="add">➕</span> {t('Add Trip')}
-            </button>
-          </form>
-          {tripMessage && (
-            <div className={`text-center text-sm font-medium mb-4 ${tripMessage.startsWith('✅') ? 'text-green-700' : 'text-red-600'}`}>
-              {tripMessage}
-            </div>
-          )}
-
-          
-        </div>
 
 
         {/*Trips Adding Form*/}
         <div className="mb-10 bg-white rounded-3xl shadow-lg p-8 border border-slate-200 overflow-x-auto">
-          {/* Export and Filters */}
-          <div className="flex flex-wrap gap-4 mb-6 items-center">
-            <button
-              onClick={handleExportTrips}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow font-bold"
-              type="button"
-            >
-              {t('Export Trips to Excel')}
-            </button>
-            <select
-              value={filterDestination}
-              onChange={e => setFilterDestination(e.target.value)}
-              className="border-2 border-blue-200 p-3 rounded-xl shadow"
-            >
-              <option value="">{t('All Destinations')}</option>
-              {uniqueDestinations.map(dest => (
-                <option key={dest} value={dest}>{dest}</option>
-              ))}
-            </select>
-            <select
-              value={filterDate}
-              onChange={e => setFilterDate(e.target.value)}
-              className="border-2 border-blue-200 p-3 rounded-xl shadow"
-            >
-              <option value="">{t('All Dates')}</option>
-              {uniqueDates.map(date => (
-                <option key={date} value={date}>{date}</option>
-              ))}
-            </select>
-          </div>
           <table className="min-w-full border mb-10 ">
             <thead>
               <tr className="bg-gray-100">
